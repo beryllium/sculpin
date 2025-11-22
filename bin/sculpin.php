@@ -17,7 +17,7 @@ if (function_exists('ini_set')) {
     @ini_set('display_errors', '1');
 
     $memoryInBytes = function ($value): int {
-        $unit = strtolower(substr($value, -1, 1));
+        $unit = strtolower(substr((string) $value, -1, 1));
         $value = (int) $value;
         switch ($unit) {
             case 'g':
@@ -38,6 +38,7 @@ if (function_exists('ini_set')) {
     if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 512 * 1024 * 1024) {
         @ini_set('memory_limit', '512M');
     }
+
     unset($memoryInBytes, $memoryLimit);
 }
 
@@ -48,7 +49,7 @@ use Symfony\Component\Console\Input\ArgvInput;
 $input = new ArgvInput;
 
 if ($projectDir = $input->getParameterOption('--project-dir')) {
-    if (false !== strpos($projectDir, '~') && function_exists('posix_getuid')) {
+    if (str_contains((string) $projectDir, '~') && function_exists('posix_getuid')) {
         $info = posix_getpwuid(posix_getuid());
         $projectDir = str_replace('~', $info['dir'], $projectDir);
     }
