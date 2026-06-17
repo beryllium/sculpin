@@ -135,7 +135,7 @@ final class HttpServer
                 $path = rtrim($path, '/') . '/index.html';
             }
 
-            if ($fetcher instanceof LiveEditorContentFetcher) {
+            if ($fetcher instanceof InBrowserEditorContentFetcher) {
                 if (str_ends_with($path, '_SCULPIN_/editor.js')) {
                     return new Response(200, ['Content-Type' => 'text/javascript'], $fetcher->editorJs());
                 }

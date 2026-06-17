@@ -16,7 +16,7 @@ namespace Sculpin\Bundle\SculpinBundle\Command;
 use Sculpin\Bundle\SculpinBundle\Console\Application;
 use Sculpin\Bundle\SculpinBundle\HttpServer\DefaultContentFetcher;
 use Sculpin\Bundle\SculpinBundle\HttpServer\HttpServer;
-use Sculpin\Bundle\SculpinBundle\HttpServer\LiveEditorContentFetcher;
+use Sculpin\Bundle\SculpinBundle\HttpServer\InBrowserEditorContentFetcher;
 use Sculpin\Core\Io\ConsoleIo;
 use Sculpin\Core\Io\IoInterface;
 use Sculpin\Core\Sculpin;
@@ -75,7 +75,7 @@ class GenerateCommand extends AbstractCommand
                     'editor',
                     null,
                     InputOption::VALUE_NONE,
-                    'Enable the experimental Live Editor <comment>(CAUTION: EXPERIMENTAL)</comment>'
+                    'Enable the In-Browser Development Editor <comment>(CAUTION: EXPERIMENTAL)</comment>'
                 ),
                 new InputOption('url', null, InputOption::VALUE_REQUIRED, 'Override URL.'),
                 new InputOption('port', null, InputOption::VALUE_REQUIRED, 'Port'),
@@ -129,7 +129,7 @@ class GenerateCommand extends AbstractCommand
             $this->runSculpin($sculpin, $dataSource, $sourceSet, $consoleIo);
 
             if ($input->getOption('editor')) {
-                $fetcher = new LiveEditorContentFetcher(
+                $fetcher = new InBrowserEditorContentFetcher(
                     $sourceSet,
                     $docroot,
                     $this->getContainer()->getParameter('sculpin.source_dir')

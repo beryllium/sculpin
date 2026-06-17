@@ -6,7 +6,7 @@ namespace Sculpin\Bundle\SculpinBundle\HttpServer;
 
 use Sculpin\Core\Source\SourceSet;
 
-class LiveEditorContentFetcher implements ContentFetcher
+class InBrowserEditorContentFetcher implements ContentFetcher
 {
     protected array $pathMap;
     protected string $docroot;
