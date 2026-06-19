@@ -20,8 +20,11 @@ if (
     exit(1);
 }
 
-if (getenv('ENV') === 'debug') {
-    print_r($_SERVER);
-}
+// Attempt to load an optional External autoloader, in case the Sculpin project
+// being operated on is more advanced than the stock configuration allows.
+$externalAutoloaderPath = getcwd()
+    . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+
+$externalAutoloader = includeIfExists($externalAutoloaderPath);
 
 include __DIR__ . '/sculpin.php';
