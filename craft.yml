@@ -10,5 +10,7 @@ download-options:
     prefer-binary: true
 build-options:
     enable-zts: true
+packages: freetype,libjpeg,libavif,libwebp
 #  with-hardcoded-ini:
 #    - "memory_limit=8G"
+# bin/spc build gd --with-libs=freetype,libjpeg,libavif,libwebp --build-cli
