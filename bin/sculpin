@@ -20,4 +20,8 @@ if (
     exit(1);
 }
 
+if (getenv('ENV') === 'debug') {
+    print_r($_SERVER);
+}
+
 include __DIR__ . '/sculpin.php';
