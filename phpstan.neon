@@ -5,4 +5,4 @@ parameters:
     excludePaths:
         - src/Sculpin/Tests
         - src/Sculpin/Core/Tests
-        - src/Sculpin/Contrib/Tests
+        - src/Sculpin/Contrib/Taxonomy/Tests
