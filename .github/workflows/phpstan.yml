@@ -1,13 +1,11 @@
 name: static analysis
 on: [pull_request]
 jobs:
-    build:
+    phpstan:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
-            - name: Composer dependencies
-              run: composer install
-            - name: Phpstan check
-              uses: OskarStark/phpstan-ga@0.12.75
+            - uses: actions/checkout@v3
+            - name: PHPStan
+              uses: docker://oskarstark/phpstan-ga
               with:
                   args: analyse
