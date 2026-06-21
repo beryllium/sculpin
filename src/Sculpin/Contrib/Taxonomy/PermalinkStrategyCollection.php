@@ -26,7 +26,7 @@ class PermalinkStrategyCollection
 
     public function push(PermalinkStrategyInterface $strategy): void
     {
-        $this->strategies->attach($strategy);
+        $this->strategies->offsetSet($strategy);
     }
 
     public function process($str)
