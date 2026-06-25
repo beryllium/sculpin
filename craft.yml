@@ -1,0 +1,16 @@
+php-version: 8.5
+extensions: "apcu,bcmath,calendar,ctype,curl,dba,dom,exif,fileinfo,filter,gd,iconv,intl,mbregex,mbstring,mysqli,mysqlnd,opcache,openssl,pcntl,pdo,pdo_mysql,pdo_pgsql,pdo_sqlite,pgsql,phar,posix,readline,redis,session,simplexml,sockets,sodium,sqlite3,tokenizer,xml,xmlreader,xmlwriter,xsl,zip,zlib"
+sapi:
+    - cli
+    - micro
+download-options:
+    parallel: 10
+    retry: 5
+    ignore-cache: php-src
+    prefer-binary: true
+build-options:
+    enable-zts: true
+packages: freetype,libjpeg,libavif,libwebp
+#  with-hardcoded-ini:
+#    - "memory_limit=8G"
+# bin/spc build gd --with-libs=freetype,libjpeg,libavif,libwebp --build-cli

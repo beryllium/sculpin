@@ -90,7 +90,26 @@
         "rector": "rector -n",
         "rector-apply": "rector",
         "test": "phpunit --colors=always",
-        "test-coverage": "phpdbg -qrr vendor/bin/phpunit --coverage-clover clover.xml --coverage-text --colors=always"
+        "test-coverage": "phpdbg -qrr vendor/bin/phpunit --coverage-clover clover.xml --coverage-text --colors=always",
+        "build:from-git": [
+            "Composer\\Config::disableProcessTimeout",
+            "echo building ...",
+            "[ ! -d build ] && mkdir build || true",
+            "git archive HEAD | tar -x -C build",
+            "cd build && rm -Rf tests/ && composer install --ignore-platform-reqs --no-dev -a"
+        ],
+        "build:phar": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build:from-git",
+            "cd build && box compile"
+        ],
+        "build": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build:phar",
+            "echo packaging binary ...",
+            "cd build && spc craft && spc micro:combine bin/sculpin.phar --output=sculpin.bin"
+        ]
+
     },
     "config": {
         "allow-plugins": {
