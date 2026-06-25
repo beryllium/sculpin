@@ -35,11 +35,11 @@ class Configuration implements ConfigurationInterface
             return $treeBuilder;
         }
 
-        // @phpstan-ignore method.notFound
         $rootNode
             ->children()
                 ->arrayNode('view_paths')
                     ->scalarPrototype()->end()
+                // @phpstan-ignore method.notFound
                 ->end()
                 ->arrayNode('source_view_paths')
                     ->defaultValue(['_views', '_layouts', '_includes', '_partials'])

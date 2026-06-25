@@ -30,8 +30,8 @@ class Configuration implements ConfigurationInterface
 
         $rootNode = $treeBuilder->getRootNode();
 
-        // @phpstan-ignore method.notFound
         $rootNode
+            // @phpstan-ignore method.notFound
             ->children()
                 ->scalarNode('theme')->defaultNull()->end()
                 ->scalarNode('directory')->defaultValue('%sculpin.source_dir%/%sculpin_theme.project_dir%')->end()
