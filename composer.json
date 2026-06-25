@@ -47,7 +47,7 @@
         "symfony/css-selector": "^6.4",
         "symfony/dom-crawler": "^6.4",
         "symfony/process": "^6.4",
-        "phpstan/phpstan": "^2.1.32",
+        "phpstan/phpstan": "^2.2",
         "rector/rector": "^2.2.8"
     },
     "suggest": {

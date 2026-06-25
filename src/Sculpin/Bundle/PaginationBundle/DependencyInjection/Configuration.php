@@ -30,8 +30,8 @@ class Configuration implements ConfigurationInterface
 
         $rootNode = $treeBuilder->getRootNode();
 
-        // @phpstan-ignore method.notFound
         $rootNode
+            // @phpstan-ignore method.notFound
             ->children()
                 ->scalarNode('max_per_page')->defaultValue('10')->end()
             ->end();

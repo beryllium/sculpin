@@ -31,8 +31,8 @@ class Configuration implements ConfigurationInterface
 
         $rootNode = $treeBuilder->getRootNode();
 
-        // @phpstan-ignore method.notFound
         $rootNode
+            // @phpstan-ignore method.notFound
             ->children()
                 ->scalarNode('parser_class')->defaultValue(Parser::class)->end()
                 ->arrayNode('extensions')
