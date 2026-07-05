@@ -20,7 +20,7 @@ class ComplexProviderLifecycleTest extends FunctionalTestCase
     public function testComplexLifecycleBuildsProperly(): void
     {
         $expectedFile = 'index.html';
-        $expectedFileContents = 'hypothetical';
+        $expectedFileContents = '<strong>hypothetical</strong>';
 
         $this->assertProjectLacksFile('/output_test/' . $expectedFile);
 
@@ -37,7 +37,7 @@ class ComplexProviderLifecycleTest extends FunctionalTestCase
     {
         $sourcePage = __DIR__ . self::PROJECT_DIR . '/source/_sections/1-jacksons.html';
         $generatedPage = __DIR__ . self::PROJECT_DIR . '/' . 'output_test/index.html';
-        $expectedWord = 'hypothetical';
+        $expectedFileContents = '<strong>hypothetical</strong>';
         $matchString = "{% include 'jackson.html' %}";
 
         // ensure consistent test state
@@ -57,7 +57,7 @@ class ComplexProviderLifecycleTest extends FunctionalTestCase
 
         // check for the word being tested
         // @todo If the below assertion is commented out, this test will PASS, demonstrating a lifecycle problem.
-        $this->assertStringContainsString($expectedWord, $pageContent);
+        $this->assertStringContainsString($expectedFileContents, $pageContent);
 
         // update the files under test by adding whitespace
         $this->modifySourcePage(
@@ -71,7 +71,7 @@ class ComplexProviderLifecycleTest extends FunctionalTestCase
         $pageContent = file_get_contents($generatedPage);
 
         // check for the word being tested
-        $this->assertStringContainsString($expectedWord, $pageContent);
+        $this->assertStringContainsString($expectedFileContents, $pageContent);
 
         $process->stop(0);
 
