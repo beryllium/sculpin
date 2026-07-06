@@ -32,7 +32,6 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
-            // @phpstan-ignore method.notFound
             ->children()
                 ->scalarNode('parser_class')
                     ->info('The markdown parser to use - must be a class without any constructor arguments')
