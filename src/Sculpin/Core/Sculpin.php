@@ -72,9 +72,11 @@ final readonly class Sculpin
         ;
 
         if ($found) {
-            $io->write(sprintf(
-                'Processing completed in %4.2f seconds',
-                microtime(true) - $startTime)
+            $io->write(
+                sprintf(
+                    'Processing completed in %4.2f seconds',
+                    microtime(true) - $startTime
+                )
             );
         }
     }

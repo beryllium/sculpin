@@ -28,7 +28,8 @@ class ComplexProviderLifecycleTest extends FunctionalTestCase
 
         $this->assertProjectHasGeneratedFile('/' . $expectedFile);
 
-        // @todo This assertion will fail, demonstrating a lifecycle problem: the inner include's content blocks are not rendered.
+        // @todo This assertion will fail, demonstrating a lifecycle problem: the inner
+        //       include's content blocks are not rendered.
         $this->assertGeneratedFileHasContent('/' . $expectedFile, $expectedFileContents);
     }
 
