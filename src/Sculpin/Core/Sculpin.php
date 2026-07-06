@@ -58,18 +58,20 @@ final readonly class Sculpin
         $startTime = microtime(true);
         $dataSource->refresh($sourceSet);
 
+        $found = false;
+
         $this
             ->sendEvent($sourceSet, self::EVENT_BEFORE_RUN)
-            ->generatePhase($sourceSet, $io)
+            ->generatePhase($sourceSet, $io, $found)
             ->permalinkPhase($sourceSet)
             ->sendEvent($sourceSet, self::EVENT_AFTER_GENERATE)
-            ->convertPhase($sourceSet, $io)
-            ->formatPhase($sourceSet, $io)
+            ->convertPhase($sourceSet, $io, $found)
+            ->formatPhase($sourceSet, $io, $found)
             ->writeOutputPhase($sourceSet, $io)
             ->sendEvent($sourceSet, self::EVENT_AFTER_RUN)
         ;
 
-        if ($sourceSet->updatedSources()) {
+        if ($found) {
             $io->write(sprintf(
                 'Processing completed in %4.2f seconds',
                 microtime(true) - $startTime)
@@ -90,11 +92,12 @@ final readonly class Sculpin
     }
 
     /**
-     * @param SourceSet $sourceSet              The list of all sources
-     * @param NullIo|IoInterface|null $io       Helper for writing/overwriting console output
+     * @param SourceSet $sourceSet The list of all sources
+     * @param NullIo|IoInterface|null $io Helper for writing/overwriting console output
+     * @param bool $found
      * @return Sculpin
      */
-    protected function generatePhase(SourceSet $sourceSet, NullIo|IoInterface|null $io): self
+    protected function generatePhase(SourceSet $sourceSet, NullIo|IoInterface|null $io, bool &$found): self
     {
         $updatedSources = array_filter(
             $sourceSet->updatedSources(),
@@ -104,6 +107,8 @@ final readonly class Sculpin
         if (!$updatedSources) {
             return $this;
         }
+
+        $found = true;
 
         $io->write('Detected new or updated files (Generate Phase)');
         $total = count($updatedSources);
@@ -143,9 +148,10 @@ final readonly class Sculpin
     /**
      * @param SourceSet $sourceSet
      * @param NullIo|IoInterface|null $io
+     * @param bool $found
      * @return Sculpin
      */
-    protected function convertPhase(SourceSet $sourceSet, NullIo|IoInterface|null $io): self
+    protected function convertPhase(SourceSet $sourceSet, NullIo|IoInterface|null $io, bool &$found): self
     {
         $updatedSources = $sourceSet->updatedSources();
 
@@ -153,7 +159,11 @@ final readonly class Sculpin
             return $this;
         }
 
-        $io->write('Detected new or updated files (Convert Phase)');
+        if (!$found) {
+            $io->write('Detected new or updated files (Convert Phase)');
+            $found = true;
+        }
+
         $total = count($updatedSources);
 
         $io->write('Converting: ', false);
@@ -181,9 +191,10 @@ final readonly class Sculpin
      *
      * @param SourceSet $sourceSet
      * @param NullIo|IoInterface|null $io
+     * @param bool $found
      * @return Sculpin
      */
-    protected function formatPhase(SourceSet $sourceSet, NullIo|IoInterface|null $io): self
+    protected function formatPhase(SourceSet $sourceSet, NullIo|IoInterface|null $io, bool &$found): self
     {
         $updatedSources = $sourceSet->updatedSources();
 
@@ -191,7 +202,11 @@ final readonly class Sculpin
             return $this;
         }
 
-        $io->write('Detected new or updated files (Format Phase');
+        if (!$found) {
+            $io->write('Detected new or updated files (Format Phase');
+            $found = true;
+        }
+
         $total = count($updatedSources);
 
         $io->write('Formatting: ', false);
