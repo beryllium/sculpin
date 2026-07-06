@@ -46,7 +46,7 @@ class SourceSet
     }
 
     /**
-     * Add this source to the list, tracking whether its a new or existing source.
+     * Add this source to the list, tracking whether it is a new or existing source.
      */
     public function mergeSource(SourceInterface $source): void
     {
@@ -98,5 +98,65 @@ class SourceSet
         }
 
         $this->newSources = [];
+    }
+
+    /**
+     * Sorts the internal sources and newSources arrays
+     *
+     * When no sort function is provided, dataAwareSortHelper is used.
+     *
+     * @param callable|null $sortFunction   Default is $this->dataAwareSortHelper()
+     * @return void
+     */
+    public function sort(?callable $sortFunction = null): void
+    {
+        $sortFunction ??= [$this, 'dataAwareSortHelper'];
+
+        uasort($this->sources, $sortFunction);
+        uasort($this->newSources, $sortFunction);
+    }
+
+    /**
+     * Digs into the provided sources to sort them according to:
+     *
+     * - frontmatter 'use:' array
+     * - frontmatter 'generator:' string
+     * - isRaw state (e.g., image files will be isRaw but markdown files will not)
+     * - sourceId / filename
+     *
+     * This puts items with no "use:" statements first in line for processing,
+     * which will ensure data providers and generators have full access to
+     * formatted content blocks in the files they depend on.
+     *
+     * @param SourceInterface $a
+     * @param SourceInterface $b
+     * @return int      A sort value (-1, 0, 1) provided by the UFO operator
+     */
+    protected function dataAwareSortHelper(SourceInterface $a, SourceInterface $b): int
+    {
+        if ($a === $b) {
+            return 0;
+        }
+
+        $nameCheck = $a->sourceId() <=> $b->sourceId();
+        $rawCheck = $a->isRaw() <=> $b->isRaw();
+
+        // Examine the "use:" frontmatter data value, usually an array (or not present)
+        $aUses = $a->data()->get('use');
+        $bUses = $b->data()->get('use');
+        $usesCheck = $aUses <=> $bUses;
+
+        // Examine the "generator:" frontmatter data value, usually a string (or not present)
+        $aGenerator = $a->data()->get('generator');
+        $bGenerator = $b->data()->get('generator');
+        $generatorCheck = $aGenerator <=> $bGenerator;
+
+        return match (true) {
+            0 !== $usesCheck => $usesCheck,
+            0 !== $generatorCheck => $generatorCheck,
+            0 !== $rawCheck => $rawCheck,
+            0 !== $nameCheck => $nameCheck,
+            default => 0,
+        };
     }
 }
