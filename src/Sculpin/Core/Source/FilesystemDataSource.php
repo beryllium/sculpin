@@ -137,11 +137,16 @@ final class FilesystemDataSource implements DataSourceInterface
         }
 
         if ($excludedFilesHaveChanged) {
-            // If any of the exluded files have changed we should
-            // mark all of the sources as having changed.
+            // If any of the excluded files have changed we should
+            // mark all the sources as having changed.
             foreach ($sourceSet->allSources() as $source) {
                 $source->setHasChanged();
             }
         }
+
+        // Sort the sources so that important processing steps can be completed
+        // in the necessary order of execution (such as data providers or
+        // generators going last in order for their data sources to exist)
+        $sourceSet->sort();
     }
 }
