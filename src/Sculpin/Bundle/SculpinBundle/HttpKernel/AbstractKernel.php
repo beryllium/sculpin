@@ -123,6 +123,7 @@ abstract class AbstractKernel extends Kernel
 
         parent::boot();
 
+        // @phpstan-ignore method.notFound
         $this->container->compile();
     }
 

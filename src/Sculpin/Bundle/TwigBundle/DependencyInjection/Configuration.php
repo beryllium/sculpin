@@ -31,6 +31,7 @@ class Configuration implements ConfigurationInterface
 
         $rootNode = $treeBuilder->getRootNode();
 
+        // @phpstan-ignore instanceof.alwaysTrue
         if (!$rootNode instanceof ArrayNodeDefinition) {
             return $treeBuilder;
         }
@@ -39,7 +40,6 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('view_paths')
                     ->scalarPrototype()->end()
-                // @phpstan-ignore method.notFound
                 ->end()
                 ->arrayNode('source_view_paths')
                     ->defaultValue(['_views', '_layouts', '_includes', '_partials'])
