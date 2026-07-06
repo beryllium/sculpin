@@ -5,4 +5,5 @@ sculpin_content_types:
             - tags
     posts:
       enabled: false
-    sections:
+    clades:
+      singular_name: clade

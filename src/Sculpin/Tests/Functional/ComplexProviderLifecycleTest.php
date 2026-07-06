@@ -35,7 +35,7 @@ class ComplexProviderLifecycleTest extends FunctionalTestCase
     /** @test */
     public function testComplexLifecycleBuildsProperly_WhileWatching(): void
     {
-        $sourcePage = __DIR__ . self::PROJECT_DIR . '/source/_sections/1-jacksons.html';
+        $sourcePage = __DIR__ . self::PROJECT_DIR . '/source/_clades/1-jacksons.html';
         $generatedPage = __DIR__ . self::PROJECT_DIR . '/' . 'output_test/index.html';
         $expectedFileContents = '<strong>hypothetical</strong>';
         $matchString = "{% include 'jackson.html' %}";

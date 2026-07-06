@@ -25,6 +25,7 @@ use:
 <p><em>{{ site.latinname}} {{ site.families[category].latin }} ({{ variations[0].date|date("Y") }})</em></p>
 {% endif %}
 {% for jackson in variations %}
+
 {% include 'jackson.html' %}
 {% endfor %}
 {% endfor %}

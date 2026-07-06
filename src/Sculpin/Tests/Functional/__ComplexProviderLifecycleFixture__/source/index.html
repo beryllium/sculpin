@@ -1,18 +1,18 @@
 ---
 layout: default
 use:
-    - sections
+    - clades
 ---
 
 <h1>Welcome to {{site.title}}</h1>
 
 <h3>Table of Contents</h3>
 <ol class="toc">
-    {% for s in data.sections %}
+    {% for s in data.clades %}
     <li><a href="#{{ s.slug }}">{{ s.title }}</a></li>
     {% endfor %}
 </ol>
 
-{% for section in data.sections %}
-{% include 'section.html' %}
+{% for clade in data.clades %}
+{% include 'clade.html' %}
 {% endfor %}
