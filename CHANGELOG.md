@@ -25,6 +25,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+* [Update FilesystemDataSource to invoke `sort` when refreshing sourceset](https://github.com/sculpin/sculpin/commit/5417b3f)
+* [Apply Sorting to SourceSet to fix a bug](https://github.com/sculpin/sculpin/commit/a38c2fb)
+* [Fix a potential bug found by phpstan in ProxySourceItem](https://github.com/sculpin/sculpin/commit/40bf9d7)
+* [Fix path strangeness in tests](https://github.com/sculpin/sculpin/commit/920f49f)
+* [Fix a bug in DraftsMap and add tests for content types (tagged posts)](https://github.com/sculpin/sculpin/commit/5ee21cfe0c656257a700b16211702aa872831d1e)
 * [Update dependencies ... to fix deprecation notice in dflydev/dflydev-dot-access-configuration](https://github.com/sculpin/sculpin/commit/b469415e0b39347f69f08bb3f09df6f59e903daa) (thanks, @pronskiy!)
 * [Update netcarver/textile to fix security issue](https://github.com/sculpin/sculpin/commit/090d85ed16834976471e42ce2864ee69301ef2ae) (thanks, @pronskiy!)
 * [Fixed syntax deprecations in string variable interpolation](https://github.com/sculpin/sculpin/commit/467ffd4d7d0e3b28c8b8234d7f29bb3c8caf6c44) (thanks, @pronskiy!)
