@@ -30,7 +30,6 @@ final class Configuration implements ConfigurationInterface
 
         $rootNode = $treeBuilder->getRootNode();
 
-        // @phpstan-ignore method.notFound
         $rootNode
             ->children()
                 ->scalarNode('source_dir')->defaultValue('%sculpin.project_dir%/source')->end()

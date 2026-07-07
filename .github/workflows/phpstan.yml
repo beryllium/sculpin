@@ -1,13 +1,15 @@
 name: static analysis
 on: [pull_request]
+env:
+    PHP_VERSION: "8.5"
+
 jobs:
-    build:
+    phpstan:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
-            - name: Composer dependencies
-              run: composer install
-            - name: Phpstan check
-              uses: OskarStark/phpstan-ga@0.12.75
+            - uses: actions/checkout@v4
+            - uses: shivammathur/setup-php@v2
               with:
-                  args: analyse
+                php-version: ${{ env.PHP_VERSION }}
+            - uses: ramsey/composer-install@v3
+            - run: composer phpstan

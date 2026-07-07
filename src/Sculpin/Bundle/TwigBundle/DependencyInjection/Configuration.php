@@ -31,11 +31,11 @@ class Configuration implements ConfigurationInterface
 
         $rootNode = $treeBuilder->getRootNode();
 
+        // @phpstan-ignore instanceof.alwaysTrue
         if (!$rootNode instanceof ArrayNodeDefinition) {
             return $treeBuilder;
         }
 
-        // @phpstan-ignore method.notFound
         $rootNode
             ->children()
                 ->arrayNode('view_paths')

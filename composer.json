@@ -17,7 +17,7 @@
         }
     ],
     "require": {
-        "php": "^8.3",
+        "php": "^8.5",
         "ext-mbstring": "*",
         "ext-fileinfo": "*",
         "dflydev/ant-path-matcher": "^1.0.3",
@@ -28,15 +28,15 @@
         "netcarver/textile": "^4.1",
         "react/http": "^1.0",
         "sculpin/sculpin-theme-composer-plugin": "^1.0",
-        "symfony/config": "^6.4.26",
-        "symfony/console": "^6.4",
-        "symfony/dependency-injection": "^6.4",
-        "symfony/event-dispatcher": "^6.4",
-        "symfony/filesystem": "^6.4",
-        "symfony/finder": "^6.4",
-        "symfony/http-kernel": "^6.4",
-        "symfony/yaml": "^6.4",
-        "symfony/mime": "^6.4",
+        "symfony/config": "^7.0",
+        "symfony/console": "^7.0",
+        "symfony/dependency-injection": "^7.0",
+        "symfony/event-dispatcher": "^7.0",
+        "symfony/filesystem": "^7.0",
+        "symfony/finder": "^7.0",
+        "symfony/http-kernel": "^7.0",
+        "symfony/yaml": "^7.0",
+        "symfony/mime": "^7.0",
         "twig/twig": "^3.0",
         "webignition/internet-media-type": "^0.4.8"
     },
@@ -44,10 +44,10 @@
         "phpdocumentor/reflection-docblock": "^5.2",
         "phpunit/phpunit": "^9.4",
         "squizlabs/php_codesniffer": "^3.3",
-        "symfony/css-selector": "^6.4",
-        "symfony/dom-crawler": "^6.4",
-        "symfony/process": "^6.4",
-        "phpstan/phpstan": "^2.1.32",
+        "symfony/css-selector": "^7.0",
+        "symfony/dom-crawler": "^7.0",
+        "symfony/process": "^7.0",
+        "phpstan/phpstan": "^2.2",
         "rector/rector": "^2.2.8"
     },
     "suggest": {
@@ -90,7 +90,26 @@
         "rector": "rector -n",
         "rector-apply": "rector",
         "test": "phpunit --colors=always",
-        "test-coverage": "phpdbg -qrr vendor/bin/phpunit --coverage-clover clover.xml --coverage-text --colors=always"
+        "test-coverage": "phpdbg -qrr vendor/bin/phpunit --coverage-clover clover.xml --coverage-text --colors=always",
+        "build:from-git": [
+            "Composer\\Config::disableProcessTimeout",
+            "echo building ...",
+            "[ ! -d build ] && mkdir build || true",
+            "git archive HEAD | tar -x -C build",
+            "cd build && rm -Rf tests/ && composer install --ignore-platform-reqs --no-dev -a"
+        ],
+        "build:phar": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build:from-git",
+            "cd build && box compile"
+        ],
+        "build": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build:phar",
+            "echo packaging binary ...",
+            "cd build && spc craft && spc micro:combine bin/sculpin.phar --output=sculpin.bin"
+        ]
+
     },
     "config": {
         "allow-plugins": {
