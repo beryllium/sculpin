@@ -13,15 +13,28 @@ declare(strict_types=1);
 
 namespace Sculpin\Core\Tests\Source;
 
+use Dflydev\DotAccessConfiguration\Configuration;
+use Dflydev\DotAccessConfiguration\ConfigurationInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sculpin\Core\Source\SourceSet;
 use Sculpin\Core\Source\SourceInterface;
 
 class SourceSetTest extends TestCase
 {
-    public function makeTestSource($sourceId, $hasChanged = true)
+    public function makeTestSource($sourceId, $hasChanged = true, array $dataMap = []): MockObject&SourceInterface
     {
         $source = $this->createMock(SourceInterface::class);
+        $data = $this->createMock(Configuration::class);
+
+        if ($dataMap) {
+            $data
+                ->expects($this->any())
+                ->method('get')
+                ->willReturnCallback(function ($key) use ($dataMap) {
+                    return $dataMap[$key] ?? null;
+                });
+        }
 
         $source
             ->expects($this->any())
@@ -32,6 +45,11 @@ class SourceSetTest extends TestCase
             ->expects($this->any())
             ->method('hasChanged')
             ->will($this->returnValue($hasChanged));
+
+        $source
+            ->expects($this->any())
+            ->method('data')
+            ->willReturn($data);
 
         return $source;
     }
@@ -129,5 +147,39 @@ class SourceSetTest extends TestCase
 
         $sourceSet = new SourceSet([$source000, $source001, $source002]);
         $sourceSet->reset();
+    }
+
+    public function testSort(): void
+    {
+        $source000 = $this->makeTestSource(
+            'TestSource:000',
+            dataMap: ['use' => ['jacksons']]
+        );
+        $source001 = $this->makeTestSource('TestSource:001');
+        $source002 = $this->makeTestSource('TestSource:002');
+
+        $source000->expects($this->any())->method('content')->will($this->returnValue('a'));
+        $source001->expects($this->any())->method('content')->will($this->returnValue('b'));
+        $source002->expects($this->any())->method('content')->will($this->returnValue('c'));
+        $source000->expects($this->exactly(2))->method('isRaw')->willReturn(false);
+
+        $sourceSet = new SourceSet([
+            $source000,
+            $source001,
+            $source002,
+        ]);
+
+        $this->assertSame(
+            ['TestSource:000', 'TestSource:001', 'TestSource:002'],
+            array_keys($sourceSet->allSources())
+        );
+
+        $sourceSet->sort();
+
+        $this->assertSame(
+            ['TestSource:001', 'TestSource:002', 'TestSource:000'],
+            array_keys($sourceSet->allSources()),
+            'Item with "use" data provider is sorted last'
+        );
     }
 }
