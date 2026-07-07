@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+* [Updated minimum PHP version to PHP 8.1](https://github.com/sculpin/sculpin/pull/513/commits/e049d0b9131399fefed6290b3b63a77256aab133)
 * [add Nix flakes for local development](https://github.com/sculpin/sculpin/commit/049fa7c8b5937ab76507de5ab916a5ea5da222e2) (thanks, @opdavies!)
 * [adding dependabot.yml](https://github.com/sculpin/sculpin/commit/f66bacbfdbe05152f2239b7f6d5724aacd442c58) (thanks, @raulolivares-drizly!)
 * [Replace Dflydev\Canal with League\MimeTypeDetection for MIME type detection because Canal is not maintained](https://github.com/sculpin/sculpin/commit/fc822d959ed42be8b581be3ffa444ddea1a28ad3) (thanks, @pronskiy!)
