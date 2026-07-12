@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sculpin\Bundle\SculpinBundle\HttpServer;
 
+use League\MimeTypeDetection\MimeTypeDetector;
 use Sculpin\Core\Source\SourceSet;
 
 class InBrowserEditorContentFetcher implements ContentFetcher
@@ -12,8 +13,12 @@ class InBrowserEditorContentFetcher implements ContentFetcher
     protected string $docroot;
     protected string $sourceDir;
 
-    public function __construct(SourceSet $set, string $docroot, string $sourceDir)
-    {
+    public function __construct(
+        SourceSet $set,
+        string $docroot,
+        string $sourceDir,
+        protected readonly MimeTypeDetector $detector,
+    ) {
         $this->docroot   = rtrim($docroot, '/') . '/';
         $this->sourceDir = rtrim($sourceDir, '/') . '/';
 

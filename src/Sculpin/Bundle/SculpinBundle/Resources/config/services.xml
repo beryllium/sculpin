@@ -61,7 +61,7 @@
             <argument type="service" id="sculpin.custom_mime_types_repository" />
         </service>
 
-        <service id="sculpin.mime.detector" class="League\MimeTypeDetection\FinfoMimeTypeDetector">
+        <service id="sculpin.mime.detector" class="League\MimeTypeDetection\FinfoMimeTypeDetector" public="true">
             <argument></argument>
             <argument>NULL</argument>
             <argument>200</argument>

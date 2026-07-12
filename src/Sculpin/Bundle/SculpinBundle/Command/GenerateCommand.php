@@ -132,7 +132,8 @@ class GenerateCommand extends AbstractCommand
                 $fetcher = new InBrowserEditorContentFetcher(
                     $sourceSet,
                     $docroot,
-                    $this->getContainer()->getParameter('sculpin.source_dir')
+                    $this->getContainer()->getParameter('sculpin.source_dir'),
+                    $this->getContainer()->get('sculpin.mime.detector')
                 );
             } else {
                 $fetcher = new DefaultContentFetcher();
