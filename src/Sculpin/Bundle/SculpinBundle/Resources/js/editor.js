@@ -97,7 +97,7 @@ var SculpinEditor = {
         // PUT content to the appropriate spot
         // this logic is temporary. Would be nice to use local storage to make sure that nothing gets lost if
         // user navs away.
-        fetch ('/_SCULPIN_/update', {
+        fetch('/_SCULPIN_/update', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -147,31 +147,25 @@ var SculpinEditor = {
                 document.location.reload();
             }
 
-            fetch ('/_SCULPIN_/hash?url=' + url + '&oldHash=' + oldHash, {
+            fetch('/_SCULPIN_/hash?url=' + url + '&oldHash=' + oldHash, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            }).then( response => {
+            }).then(response => {
                 if (response.ok) {
                     // fetch that body
                     return response.json();
                 }
             }).then(data => {
-                console.log(
-                    ' Old Hash: ' + oldHash +
-                    ' New Hash: ' + data.hash +
-                    ' For URL: ' + url,
-                    data
-                );
+                console.log('Old Hash: ' + oldHash + ' New Hash: ' + data.hash + ' For URL: ' + url, data);
+
                 // check that hash has changed from oldHash
                 // if so, reload the current page
                 if (data.hash !== oldHash) {
                     document.location.reload();
-
-                    return;
                 }
-            });
+            })
         }, 500);
     },
 
@@ -218,7 +212,8 @@ var SculpinEditor = {
 };
 
 // "you might not need jquery": https://youmightnotneedjquery.com/#ready
-function ready(fn) {
+function ready(fn)
+{
     if (document.readyState !== 'loading') {
         fn();
     } else {

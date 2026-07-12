@@ -42,7 +42,8 @@ class InBrowserEditorContentFetcher implements ContentFetcher
         $this->pathMap = $pathMap;
     }
 
-    public function buildSourceMap() {
+    public function buildSourceMap(): void
+    {
         $files = Finder::create()
             ->files()
             ->ignoreVCS(true)
@@ -190,10 +191,17 @@ class InBrowserEditorContentFetcher implements ContentFetcher
             $output['content'] = $content;
             $output['contentHashSource'] = md5_file($fullDiskPath);
 
-            // renderedView does not map 1:1 to all files. For example, layouts map to all files that use the layout.
-            // this makes it difficult to decide which file should be the source of truth for whether an edit has been applied.
-            // Punting on this for now, and only providing generated file hash for 1:1 mappings.
-            $output['contentHashGenerated'] = ($path && file_exists($renderedView)) ? md5_file($renderedView) : 'unknown';
+            // renderedView does not map 1:1 to all files. For example,
+            // layouts map to all files that use the layout.
+            //
+            // This makes it difficult to decide which file should be
+            // the source of truth for whether an edit has been applied.
+            //
+            // Punting on this for now, and only providing generated
+            // file hash for 1:1 mappings.
+            $output['contentHashGenerated'] = ($path && file_exists($renderedView))
+                ? md5_file($renderedView)
+                : 'unknown';
         }
 
         return $output;
