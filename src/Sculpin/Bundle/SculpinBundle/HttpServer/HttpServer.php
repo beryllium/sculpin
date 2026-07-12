@@ -140,6 +140,10 @@ final class HttpServer
                     return new Response(200, ['Content-Type' => 'text/javascript'], $fetcher->editorJs());
                 }
 
+                if (str_ends_with($path, '_SCULPIN_/editor.css')) {
+                    return new Response(200, ['Content-Type' => 'text/css'], $fetcher->editorCss());
+                }
+
                 if (str_ends_with($path, '_SCULPIN_/hash') && $request->getMethod() === 'GET') {
                     $params = $request->getQueryParams();
                     if (!$fetcher->diskPathExists($params['url'])) {
