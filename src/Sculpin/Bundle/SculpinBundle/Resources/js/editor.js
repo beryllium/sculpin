@@ -119,30 +119,53 @@ var SculpinEditor = {
         }));
     },
 
-    // @todo there is a bug in here where, if the content wasn't changed, the interval will constantly retry.
+    // Watches the hash every 500ms for 10 attempts, then gives up and reloads
     watchForChanges: function (url, oldHash) {
-        setInterval(function () {
-            var xmlHttp = new XMLHttpRequest();
+        let hashwatcherId;
+        let hashwatcherCounter = 0;
 
-            xmlHttp.open('GET', '/_SCULPIN_/hash?url=' + url);
-            xmlHttp.setRequestHeader('Content-Type', 'application/json');
-            xmlHttp.onload = function (e) {
-                if (xmlHttp.readyState === 4) {
-                    if (xmlHttp.status === 200) {
-                        // fetch body
-                        // check that hash has changed from oldHash
-                        // if so, reload the current page
-                        const data = JSON.parse(xmlHttp.responseText);
-                        if (data.hash !== oldHash) {
-                            document.location.reload();
-                            return;
-                        }
-                    } else {
-                        console.error(xmlHttp.statusText);
-                    }
+        hashwatcherId = setInterval(() => {
+            if (url.length === 0 || oldHash === undefined) {
+                // The edited content does not correspond to a specific URL
+                // Wait a few seconds and then trigger a regular reload
+                clearInterval(hashwatcherId);
+                setTimeout(() => document.location.reload(), 3000);
+                return;
+            }
+
+            // @todo maybe update the document.location if the `url` is not blank & doesn't
+            //       match (or isn't contained in) document.location
+            if (hashwatcherCounter++ > 10) {
+                console.log('Giving up on checking the hash; reloading current location');
+                clearInterval(hashwatcherId);
+                document.location.reload();
+            }
+
+            fetch ('/_SCULPIN_/hash?url=' + url + '&oldHash=' + oldHash, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-            };
-            xmlHttp.send();
+            }).then( response => {
+                if (response.ok) {
+                    // fetch that body
+                    return response.json();
+                }
+            }).then(data => {
+                console.log(
+                    ' Old Hash: ' + oldHash +
+                    ' New Hash: ' + data.hash +
+                    ' For URL: ' + url,
+                    data
+                );
+                // check that hash has changed from oldHash
+                // if so, reload the current page
+                if (data.hash !== oldHash) {
+                    document.location.reload();
+
+                    return;
+                }
+            });
         }, 500);
     },
 
