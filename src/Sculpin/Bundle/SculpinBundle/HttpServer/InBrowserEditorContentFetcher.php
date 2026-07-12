@@ -136,4 +136,42 @@ class InBrowserEditorContentFetcher implements ContentFetcher
 
         return md5_file($this->docroot . $path) ?: null;
     }
+
+    public function editorCss(): string
+    {
+        return file_get_contents(__DIR__ . '/../Resources/css/editor.css') ?: '';
+    }
+
+    public function getMetadata(string $path = '', string $source = ''): array
+    {
+        $url = $path ? $this->pathMap[$path] ?? $source : $source;
+
+        // Normalize $url by erasing the sourceDir, if present
+        $diskPath = str_replace($this->sourceDir, '', $url);
+        $fullDiskPath = $this->sourceDir . $diskPath;
+
+        $content = file_exists($fullDiskPath) ? file_get_contents($fullDiskPath) : null;
+
+        // @todo Calculate the rendered view path, if possible
+        $renderedView = $this->docroot . $path;
+
+        $output = [
+            'url' => $path,
+            'pathMap' => $this->pathMap,
+            'sourceMap' => $this->sourceMap, // @todo see if this can include the generated file path
+        ];
+
+        if ($content) {
+            $output['diskPath'] = $diskPath;
+            $output['content'] = $content;
+            $output['contentHashSource'] = md5_file($fullDiskPath);
+
+            // renderedView does not map 1:1 to all files. For example, layouts map to all files that use the layout.
+            // this makes it difficult to decide which file should be the source of truth for whether an edit has been applied.
+            // Punting on this for now, and only providing generated file hash for 1:1 mappings.
+            $output['contentHashGenerated'] = ($path && file_exists($renderedView)) ? md5_file($renderedView) : 'unknown';
+        }
+
+        return $output;
+    }
 }
