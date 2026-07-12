@@ -1,29 +1,6 @@
 var SculpinEditor = {
     init: function () {
-        this.renderStyles();
         this.renderBar();
-    },
-
-    renderStyles: function () {
-        // select head element for style injection
-        var head = document.getElementsByTagName('head')[0];
-
-        head.innerHTML += `
-            <style>
-
-            #SCULPIN_BOTTOM_BAR {
-                background-color: #4D636D;
-                border-top: 5px dashed #C27548;
-                padding: 20px;
-                margin: 0;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-            }
-
-            </style>
-        `;
     },
 
     renderBar: function () {
@@ -32,13 +9,12 @@ var SculpinEditor = {
 
         // render bottom bar with edit button
         body.innerHTML += '<div id="SCULPIN_BOTTOM_BAR">' +
-            '<div style="float: left; color: white; font-family: sans-serif;font-size: 1.1em; padding-right: 20px;"><strong style="padding-right: 8px; font-weight: bolder;">Sculpin</strong> <em>In-Browser Editor</em> ' +
-            '<a href="https://sculpin.io/documentation/sources" style="color: white; padding-left: 10px;">[ Documentation ]</a></div>' +
-            '<div style="float: right;">' +
-            '<span style="color: white; font-family: sans-serif; padding-right: 20px;"><strong>Current Disk Path:</strong> /'+SCULPIN_EDITOR_METADATA.url+'</span>' +
-            '<BUTTON id="SCULPIN_EDIT_BUTTON" style="color: #ffffff; background-color: #9f1770; border: 0; padding: 10px; font-weight: bolder;">Edit This Page</BUTTON></div>' +
+            '<div><strong>Sculpin</strong> <em>In-Browser Editor</em> ' +
+            '<a href="https://sculpin.io/documentation/sources">[ Documentation ]</a></div>' +
+            '<div class="controls">' +
+            '<span><strong>Current Disk Path:</strong> '+SCULPIN_EDITOR_METADATA.diskPath+'</span>' +
+            '<button id="SCULPIN_EDIT_BUTTON">Edit This Page</button></div>' +
             '</div>';
-        // width: 100%; background-color: steelblue; padding-top: 20px; padding-bottom: 20px; position: fixed; bottom: 0px; left: 0px; padding-left: 0px; margin: 0px !important; display: none;
         this.registerListeners();
     },
 
@@ -48,12 +24,17 @@ var SculpinEditor = {
 
         // load editor box with content
         var body = document.getElementsByTagName('body')[0];
-        body.innerHTML += '<div id="SCULPIN_EDIT_PANEL" style="background-color: steelblue; padding: 12px; position: fixed; bottom: 0; height: 50%; left: 0; right: 0;">' +
-            '<h3 style="color: white; font-family: sans-serif;">Editing <small>/'+SCULPIN_EDITOR_METADATA.url+'</small></h3>' +
-            '<textarea style="width: 100%; font-size: 1.02em; font-family: \'Roboto Mono\', monospace; padding-bottom: 12px; height: 70%;" id="SCULPIN_EDIT_TEXTAREA">' + SCULPIN_EDITOR_METADATA.content + '</textarea>' +
-            '<div style="margin-top: 8px;">' +
-            '<button id="SCULPIN_CANCEL_CHANGES" style="color: #ffffff; background-color: #9f480c; border: 0; padding: 10px; margin-top: 10px;font-weight: bolder;">Cancel</button> ' +
-            '<button id="SCULPIN_SAVE_CHANGES" style="color: #ffffff; background-color: #9f1770; border: 0; padding: 10px; margin-right: 12px;font-weight: bolder;">Save Changes</button>' +
+        body.innerHTML += '<div id="SCULPIN_EDIT_PANEL">' +
+            '<h3>Editing <small>'+SCULPIN_EDITOR_METADATA.url+'</small></h3>' +
+            'Not the file you want to edit? Choose a different one: <form><select id="SCULPIN_FILE_SELECTOR" name="file-selector">' +
+            Object.entries(SCULPIN_EDITOR_METADATA.sourceMap).map(
+                (item, i) => '<option value="' + item[0] + '"' + (item[0] === SCULPIN_EDITOR_METADATA.diskPath ? ' SELECTED' : '') + '>' + item[0] + '</option>'
+            ).join('') +
+            '</select></form>' +
+            '<textarea id="SCULPIN_EDIT_TEXTAREA">' + SCULPIN_EDITOR_METADATA.content + '</textarea>' +
+            '<div class="controls">' +
+            '<button id="SCULPIN_CANCEL_CHANGES">Cancel</button> ' +
+            '<button id="SCULPIN_SAVE_CHANGES">Save Changes</button>' +
             '</div></div>';
 
         this.registerListeners();
