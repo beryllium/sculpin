@@ -31,12 +31,11 @@ class InBrowserEditorContentFetcher implements ContentFetcher
     public function buildPathMap(SourceSet $set): void
     {
         $pathMap = [];
-        $docRoot = rtrim($this->docroot, '/\\');
         $sources = $set->allSources();
 
         foreach ($sources as $source) {
             $relativePath      = ltrim($source->permalink()->relativeFilePath(), '/\\');
-            $pathKey           = $docRoot . DIRECTORY_SEPARATOR . $relativePath;
+            $pathKey           = $relativePath;
             $pathMap[$pathKey] = $source->file()->getPathname();
         }
 
@@ -67,8 +66,9 @@ class InBrowserEditorContentFetcher implements ContentFetcher
     public function fetchData(string $path): ?string
     {
         $body = file_get_contents($path);
+        $relativePath = str_replace($this->docroot, '', $path);
 
-        return $body ? $this->process($path, $body) : null;
+        return $body ? $this->process($relativePath, $body) : null;
     }
 
     protected function process(string $path, string $body): string
@@ -125,22 +125,31 @@ class InBrowserEditorContentFetcher implements ContentFetcher
 
     public function diskPathExists(string $path): bool
     {
-        $fullPath = $this->docroot . $path;
-
-        if (!isset($this->pathMap[$fullPath])) {
+        if (!isset($this->pathMap[$path])) {
             return false;
         }
 
-        return file_exists($this->pathMap[$fullPath]);
+        return file_exists($this->pathMap[$path]);
     }
 
-    public function save(string $path, string $content): void
+    public function sourceExists(string $sourcePath): bool
     {
-        if (!$this->diskPathExists($path)) {
+        if (!isset($this->sourceMap[$sourcePath])) {
+            return false;
+        }
+
+        $fullPath = $this->sourceDir . $this->sourceMap[$sourcePath]['pathname'];
+
+        return file_exists($fullPath);
+    }
+
+    public function save(string $sourcePath, string $content): void
+    {
+        if (!$this->sourceExists($sourcePath)) {
             return;
         }
 
-        file_put_contents($this->pathMap[$this->docroot . $path], $content);
+        file_put_contents($this->sourceDir . $this->sourceMap[$sourcePath]['pathname'], $content);
     }
 
     public function hash(string $path): ?string

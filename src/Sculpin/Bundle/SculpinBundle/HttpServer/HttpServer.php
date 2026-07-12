@@ -136,6 +136,10 @@ final class HttpServer
             }
 
             if ($fetcher instanceof InBrowserEditorContentFetcher) {
+                $params = $request->getQueryParams();
+                $url = $params['url'] ?? '';
+                $source = $params['source'] ?? '';
+
                 if (str_ends_with($path, '_SCULPIN_/editor.js')) {
                     return new Response(200, ['Content-Type' => 'text/javascript'], $fetcher->editorJs());
                 }
@@ -145,16 +149,16 @@ final class HttpServer
                 }
 
                 if (str_ends_with($path, '_SCULPIN_/hash') && $request->getMethod() === 'GET') {
-                    $params = $request->getQueryParams();
-                    if (!$fetcher->diskPathExists($params['url'])) {
+                    if (!$fetcher->diskPathExists($url)) {
                         return new Response(
-                            400, // While this might look like a "404" case, the requested URL technically does exist.
+                            400, // 400 is intentional, as the path may exist in Output yet not exist as a Source file
                             ['Content-Type' => 'application/json'],
                             json_encode(['error' => 'Not Found'])
                         );
                     }
 
-                    $hash = $fetcher->hash($params['url']);
+                    $hash = $fetcher->hash($url);
+                    $output->writeln(sprintf('Hash for %s: %s', $url, $hash));
 
                     return new Response(200, ['Content-Type' => 'application/json'], json_encode(['hash' => $hash]));
                 }
@@ -180,7 +184,7 @@ final class HttpServer
                 ) {
                     $edit = json_decode($request->getBody()->getContents(), true);
 
-                    if (!$fetcher->diskPathExists($edit['url'])) {
+                    if (!$fetcher->sourceExists($edit['diskPath'])) {
                         HttpServer::logRequest($output, 404, $request);
 
                         $notFoundMessage = '<h1>404</h1><h2>Not Found</h2>'
@@ -192,9 +196,10 @@ final class HttpServer
                         return new Response(404, ['Content-Type' => 'text/html'], $notFoundMessage);
                     }
 
-                    $fetcher->save($edit['url'], $edit['content']);
+                    $fetcher->save($edit['diskPath'], $edit['content']);
 
                     HttpServer::logRequest($output, 307, $request);
+                    $output->writeln(sprintf('Updated: %s', $edit['diskPath']));
 
                     return new Response(307, ['Location' => $edit['path']]);
                 }
