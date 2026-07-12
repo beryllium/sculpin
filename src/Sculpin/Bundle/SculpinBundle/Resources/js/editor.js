@@ -84,6 +84,7 @@ var SculpinEditor = {
     },
 
     saveChanges: function () {
+        console.log('saving ...', SCULPIN_EDITOR_METADATA.diskPath, SCULPIN_EDITOR_METADATA.url);
         var content = document.getElementById('SCULPIN_EDIT_TEXTAREA').value;
 
         if (content === SCULPIN_EDITOR_METADATA.content) {
@@ -95,28 +96,33 @@ var SculpinEditor = {
 
         // PUT content to the appropriate spot
         // this logic is temporary. Would be nice to use local storage to make sure that nothing gets lost if
-        // user navs away. Also, XHR synchronous usage is deprecated, would be nice to either redo this as a
-        // form submit or await the result of the async version.
-        var xmlHttp = new XMLHttpRequest();
+        // user navs away.
+        fetch ('/_SCULPIN_/update', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'diskPath': SCULPIN_EDITOR_METADATA.diskPath,
+                'url': SCULPIN_EDITOR_METADATA.url,
+                'path': window.location.pathname,
+                'content': content,
+                'contentHash': SCULPIN_EDITOR_METADATA.contentHash
+            })
+        }).then(response => {
+            if (response.ok) {
+                SculpinEditor.watchForChanges(SCULPIN_EDITOR_METADATA.url, SCULPIN_EDITOR_METADATA.contentHashGenerated);
 
-        xmlHttp.open('PUT', '/_SCULPIN_/update');
-        xmlHttp.setRequestHeader('Content-Type', 'application/json');
-        xmlHttp.onload = function (e) {
-            if (xmlHttp.readyState === 4) {
-                if (xmlHttp.status === 200 || xmlHttp.status === 307) {
-                    SculpinEditor.watchForChanges(SCULPIN_EDITOR_METADATA.url, SCULPIN_EDITOR_METADATA.contentHash)
-                } else {
-                    console.error(xmlHttp.statusText);
-                }
+                return;
             }
-        };
-        xmlHttp.send(JSON.stringify({
-            'diskPath': SCULPIN_EDITOR_METADATA.diskPath,
-            'url': SCULPIN_EDITOR_METADATA.url,
-            'path': window.location.pathname,
-            'content': content,
-            'contentHash': SCULPIN_EDITOR_METADATA.contentHash
-        }));
+
+            throw Error(response.statusText);
+        }).catch(err => {
+            console.log('Update failed: ' + err.message);
+
+            // @todo come up with a nicer failure-handler than this ...
+            document.location.reload();
+        });
     },
 
     // Watches the hash every 500ms for 10 attempts, then gives up and reloads
