@@ -83,24 +83,39 @@ class InBrowserEditorContentFetcher implements ContentFetcher
             return $body;
         }
 
-        $url      = str_replace($this->docroot, '', $path);
-        $diskPath = str_replace($this->sourceDir, '', $this->pathMap[$path]);
-        $content  = file_get_contents($this->pathMap[$path]);
+        $metadata = $this->getMetadata($path);
+        $json = json_encode($metadata, JSON_PRETTY_PRINT);
 
-        $json = json_encode([
-            'url'      => $url,
-            'diskPath' => $diskPath,
-            'content'  => $content,
-            'contentHash' => md5_file($path),
-        ]);
+        $injectionString = <<<EOF
+            <script>
+              var SCULPIN_EDITOR_METADATA = {$json};
+            </script>
+            <script src="/_SCULPIN_/editor.js" type="text/javascript"></script>
+            <link href="/_SCULPIN_/editor.css" rel="stylesheet" type="text/css" />
+        EOF;
+
+        $headPos = stripos($body, '</head>');
+        if (false === $headPos) {
+            $bodyPos = stripos($body, '<body');
+            if ($bodyPos) {
+                $body = str_ireplace('<body', PHP_EOL . '<head></head>' . PHP_EOL . '<body', $body);
+                $headPos = stripos($body, '</head>');
+            }
+        }
 
         // modify the body content to activate the live editor
-        return $body . <<<EOF
-        <script>
-          var SCULPIN_EDITOR_METADATA = {$json};
-        </script>
-        <script src="/_SCULPIN_/editor.js" type="text/javascript"></script>
-        EOF;
+
+        // No head found, append and hope it works
+        if (false === $headPos) {
+            return $body . $injectionString;
+        }
+
+        // inject the live editor into the head
+        return str_ireplace(
+            '</head>',
+            PHP_EOL . $injectionString . PHP_EOL . '</head>',
+            $body,
+        );
     }
 
     public function editorJs(): string
