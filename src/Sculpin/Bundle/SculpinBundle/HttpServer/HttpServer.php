@@ -159,6 +159,22 @@ final class HttpServer
                     return new Response(200, ['Content-Type' => 'application/json'], json_encode(['hash' => $hash]));
                 }
 
+                if (strstr($path, '/_SCULPIN_/metadata') && $request->getMethod() === 'GET') {
+                    try {
+                        return new Response(
+                            200,
+                            ['Content-Type' => 'application/json'],
+                            json_encode($fetcher->getMetadata(path: $url, source: $source))
+                        );
+                    } catch (\Exception $e) {
+                        return new Response(
+                            404,
+                            ['Content-Type' => 'application/json'],
+                            json_encode(['error' => 'Not Found'])
+                        );
+                    }
+                }
+
                 if (str_ends_with($path, '_SCULPIN_/update')
                     && $request->getMethod() === 'PUT'
                 ) {
