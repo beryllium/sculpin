@@ -6,10 +6,12 @@ namespace Sculpin\Bundle\SculpinBundle\HttpServer;
 
 use League\MimeTypeDetection\MimeTypeDetector;
 use Sculpin\Core\Source\SourceSet;
+use Symfony\Component\Finder\Finder;
 
 class InBrowserEditorContentFetcher implements ContentFetcher
 {
     protected array $pathMap;
+    protected array $sourceMap;
     protected string $docroot;
     protected string $sourceDir;
 
@@ -23,6 +25,7 @@ class InBrowserEditorContentFetcher implements ContentFetcher
         $this->sourceDir = rtrim($sourceDir, '/') . '/';
 
         $this->buildPathMap($set);
+        $this->buildSourceMap();
     }
 
     public function buildPathMap(SourceSet $set): void
@@ -38,6 +41,27 @@ class InBrowserEditorContentFetcher implements ContentFetcher
         }
 
         $this->pathMap = $pathMap;
+    }
+
+    public function buildSourceMap() {
+        $files = Finder::create()
+            ->files()
+            ->ignoreVCS(true)
+            ->ignoreDotFiles(false)
+            ->followLinks()
+            ->in($this->sourceDir);
+
+        $this->sourceMap = [];
+
+        foreach ($files as $file) {
+            $this->sourceMap[$file->getRelativePathname()] = [
+                'pathname' => $file->getRelativePathname(),
+                'file' => $file->getFilename(),
+                'type' => $file->getType(),
+                'mime' => $this->detector->detectMimeTypeFromFile($file->getPathname()),
+                'ext' => mb_strtolower($file->getExtension()),
+            ];
+        }
     }
 
     public function fetchData(string $path): ?string
