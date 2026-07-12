@@ -44,6 +44,7 @@ var SculpinEditor = {
         let editButton = document.getElementById("SCULPIN_EDIT_BUTTON");
         let saveButton = document.getElementById("SCULPIN_SAVE_CHANGES");
         let cancelButton = document.getElementById("SCULPIN_CANCEL_CHANGES");
+        let fileSelectorForm = document.getElementById('SCULPIN_FILE_SELECTOR');
 
         editButton && editButton.addEventListener('click', function () {
             var editor = document.getElementById('SCULPIN_EDIT_PANEL');
@@ -67,7 +68,11 @@ var SculpinEditor = {
             SculpinEditor.saveChanges();
         });
 
-        console.log('Registering Cancel Button Event', cancelButton);
+        fileSelectorForm && fileSelectorForm.addEventListener('change', function (e) {
+            SculpinEditor.switchFile(e);
+        });
+
+        // @todo Cancel button re-registration is not working
         cancelButton && cancelButton.addEventListener('click', function () {
             console.log('Clicked Cancel');
             // @todo check if the content has changed and ask the user to confirm if they want to discard their changes
@@ -139,6 +144,47 @@ var SculpinEditor = {
             };
             xmlHttp.send();
         }, 500);
+    },
+
+    switchFile: (e) => {
+        // Ensure that the selected value exists in the SourceMap (source/* files, unprocessed) or PathMap (processed files mapped to the SourceMap)
+        let newFilePath = e.currentTarget.value;
+        let newFileSource = SCULPIN_EDITOR_METADATA.sourceMap[newFilePath];
+
+        if (newFileSource === undefined) {
+            console.log('Encountered an error: source map not found for ' + newFilePath + ', CANNOT SWITCH FILE');
+        }
+
+        // Check that it is OK to rewrite the Editor (i.e., the content matches the current content hash)
+        let content = document.getElementById('SCULPIN_EDIT_TEXTAREA').value;
+        if (content !== SCULPIN_EDITOR_METADATA.content) {
+            console.log('Encountered an error: CONTENT MISMATCH, EDITOR IS DIRTY, CANNOT SWITCH FILE');
+            return;
+        }
+
+        // Re-fetch Metadata Var for the new selection
+        fetch('/_SCULPIN_/metadata?source=' + newFilePath)
+            .then(response => {
+                if (!response.ok) {
+                    throw Error(response.statusText);
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                SCULPIN_EDITOR_METADATA = data;
+
+                // Write new content to Editor Textarea
+                SculpinEditor.refreshEditor();
+            })
+            .catch(err => console.log('Exception while updating metadata', err));
+    },
+    refreshEditor: () => {
+        let editBox = document.getElementById('SCULPIN_EDIT_TEXTAREA');
+        let editFilename = document.querySelectorAll('#SCULPIN_EDIT_PANEL > h3 > small')[0];
+
+        editBox.value = SCULPIN_EDITOR_METADATA.content;
+        editFilename.innerHTML = SCULPIN_EDITOR_METADATA.diskPath;
     }
 };
 
