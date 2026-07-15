@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Sculpin\Bundle\SculpinBundle\Command;
 
+use Sculpin\Bundle\ContentTypesBundle\ContentCreateService;
 use Sculpin\Bundle\SculpinBundle\Console\Application;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -24,12 +27,8 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 final class InitCommand extends AbstractCommand
 {
-    public const int COMMAND_SUCCESS          = 0;
-
     public const int PROJECT_FOLDER_NOT_EMPTY = 101;
-
     public const string DEFAULT_SUBTITLE = 'A Static Site Powered By Sculpin';
-
     public const string DEFAULT_TITLE    = 'My Sculpin Site';
 
     /**
@@ -40,27 +39,43 @@ final class InitCommand extends AbstractCommand
         $prefix = $this->isStandaloneSculpin() ? '' : 'sculpin:';
 
         $this
-            ->setName($prefix.'init')
+            ->setName($prefix . 'init')
             ->setDescription('Initialize a default site configuration.')
             ->setDefinition([
                 new InputOption(
                     'title',
                     't',
                     InputOption::VALUE_REQUIRED,
-                    'Specify a title for your Sculpin site.',
+                    'Title for your new website',
                     self::DEFAULT_TITLE
                 ),
                 new InputOption(
                     'subtitle',
                     's',
                     InputOption::VALUE_REQUIRED,
-                    'Specify a sub-title for your Sculpin site.',
+                    'Sub-title for your new website',
                     self::DEFAULT_SUBTITLE
+                ),
+                new InputOption(
+                    'posts',
+                    'p',
+                    InputOption::VALUE_NONE,
+                    'Configure the website as a blog'
+                ),
+                new InputOption(
+                    'no-posts',
+                    null,
+                    InputOption::VALUE_NONE,
+                    'Disable blog posts (default)'
                 ),
             ])
             ->setHelp(<<<EOT
             The <info>init</info> command initializes a default site configuration.
 
+            If title/subtitle are not provided, the command will ask the user for input.
+
+            Once the site has been created, the `content:create` command can be used
+            to create custom Content Types, such as Blog Posts.
             EOT
             );
     }
@@ -79,6 +94,24 @@ final class InitCommand extends AbstractCommand
 
         $title    = $input->getOption('title');
         $subTitle = $input->getOption('subtitle');
+        $enablePosts = $input->getOption('posts');
+        $disablePosts = $input->getOption('no-posts');
+
+        $questionHelper = new QuestionHelper();
+
+        $question = new Question('Title for your website:', self::DEFAULT_TITLE);
+        $title ??= $questionHelper->ask($input, $output, $question);
+
+        $question = new Question('Sub-heading for your website:', self::DEFAULT_SUBTITLE);
+        $subTitle ??= $questionHelper->ask($input, $output, $question);
+
+        $posts = false;
+        if (!$enablePosts && !$disablePosts) {
+            $question = new Question('Will your website have blog posts?', false);
+            $posts = $questionHelper->ask($input, $output, $question);
+        } else if ($enablePosts) {
+            $posts = true;
+        }
 
         $projectDir = $this->getContainer()->getParameter('sculpin.project_dir');
         $output->writeln('Project Directory: <info>' . $projectDir . '</info>');
@@ -98,16 +131,23 @@ final class InitCommand extends AbstractCommand
         $this->createDefaultKernel($projectDir);
 
         // 3. Create default Site config files
-        $this->createSiteKernelFile($projectDir);
+        $this->createSiteKernelFile($projectDir, $posts);
         $this->createSiteConfigFile($projectDir, $title, $subTitle);
 
         // 4. Create source folder (with or without posts) and the very first basic entry in the source folder
-        $this->createSourceFolder($projectDir);
+        $this->createSourceFolder($projectDir, $posts);
 
         $output->writeln('<info>Success!</info>');
-        $output->writeln('Run "sculpin generate --watch --server" to see your static site in action.');
+        $output->writeln('Run "sculpin generate --watch --server --editor" to see your static site in action.');
+        $output->writeln('');
 
-        return self::COMMAND_SUCCESS;
+        if (!$posts) {
+            $output->writeln(
+                'Or, use the `sculpin content:create` command to create a custom Content Type, such as Blog Posts.'
+            );
+        }
+
+        return self::SUCCESS;
     }
 
     private function ensureCleanSlate(string $projectDir, OutputInterface $output): bool
@@ -138,7 +178,7 @@ final class InitCommand extends AbstractCommand
             protected function getAdditionalSculpinBundles(): array
             {
                 return [
-        //            'App\\Bundle\\ExampleBundle\\AppExampleBundle'
+        //            App\Bundle\ExampleBundle\AppExampleBundle:class,
                 ];
             }
         }
@@ -147,14 +187,27 @@ final class InitCommand extends AbstractCommand
         $this->createFile($projectDir . '/app/SculpinKernel.php', $contents);
     }
 
-    private function createSiteKernelFile(string $projectDir): void
+    private function createSiteKernelFile(string $projectDir, bool $posts = false): void
     {
-        $contents = <<<EOT
-        sculpin_content_types:
-            posts:
-              enabled: false
+        if ($posts) {
+            $contents = <<<EOT
+            sculpin_content_types:
+                posts:
+                    type: path
+                    path: _posts
+                    permalink: pretty
+                    taxonomies:
+                        - tags
+                        - categories
+            EOT;
+        } else {
+            $contents = <<<EOT
+            sculpin_content_types:
+                posts:
+                  enabled: false
+            EOT;
+        }
 
-        EOT;
         $this->createFile($projectDir . '/app/config/sculpin_kernel.yml', $contents);
     }
 
@@ -164,6 +217,8 @@ final class InitCommand extends AbstractCommand
         string $subTitle
     ): void {
         $contents = <<<EOT
+        # These values will be available in your markdown and HTML twig templates, in the `site` object.
+        # Example: `{{ site.title }}`
         title: "{$title}"
         subtitle: "{$subTitle}"
         google_analytics_tracking_id: ''
@@ -173,7 +228,7 @@ final class InitCommand extends AbstractCommand
         $this->createFile($projectDir . '/app/config/sculpin_site.yml', $contents);
     }
 
-    private function createSourceFolder(string $projectDir): void
+    private function createSourceFolder(string $projectDir, bool $posts = false): void
     {
         $fs = new Filesystem();
 
@@ -201,6 +256,18 @@ final class InitCommand extends AbstractCommand
 
             EOT
         );
+
+        if ($posts) {
+            $contentService = new ContentCreateService($projectDir);
+
+            $manifest = $contentService->generateBoilerplateManifest(
+                'posts',
+                'post',
+                ['tags', 'categories'],
+            );
+
+            $contentService->processManifest($manifest);
+        }
     }
 
     private function createFile(string $path, string $contents): void
