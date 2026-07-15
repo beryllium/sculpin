@@ -19,6 +19,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -107,8 +108,16 @@ final class InitCommand extends AbstractCommand
 
         $posts = false;
         if (!$enablePosts && !$disablePosts) {
-            $question = new Question('Will your website have blog posts?', false);
-            $posts = $questionHelper->ask($input, $output, $question);
+            $question = new ChoiceQuestion(
+                'Will your website have blog posts?',
+                ['y' => 'yes', 'n' => 'no (default)'],
+                'n'
+            );
+
+            $posts = match ($questionHelper->ask($input, $output, $question)) {
+                'y' => true,
+                default => false,
+            };
         } else if ($enablePosts) {
             $posts = true;
         }
