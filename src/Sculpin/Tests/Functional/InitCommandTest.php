@@ -28,7 +28,7 @@ final class InitCommandTest extends FunctionalTestCase
         $projectDir = self::projectDir();
         $this->assertProjectEmpty($projectDir);
 
-        $this->executeSculpin(['init', '--no-posts']);
+        $this->executeSculpin(['init', '--no-posts', '-t', InitCommand::DEFAULT_TITLE]);
 
         $this->assertProjectInitialized($projectDir);
 

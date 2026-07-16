@@ -48,7 +48,6 @@ final class InitCommand extends AbstractCommand
                     't',
                     InputOption::VALUE_REQUIRED,
                     'Title for your new website',
-                    self::DEFAULT_TITLE
                 ),
                 new InputOption(
                     'subtitle',
