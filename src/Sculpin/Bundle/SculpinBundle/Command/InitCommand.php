@@ -118,7 +118,7 @@ final class InitCommand extends AbstractCommand
                 'y' => true,
                 default => false,
             };
-        } else if ($enablePosts) {
+        } elseif ($enablePosts) {
             $posts = true;
         }
 
@@ -337,10 +337,14 @@ final class InitCommand extends AbstractCommand
                 <div class="pagination">
                     {% if page.pagination.previous_page or page.pagination.next_page %}
                         {% if page.pagination.previous_page %}
-                            <a href="{{ site_url }}{{ page.pagination.previous_page.url }}" title="{{ previous }}"><span>{{ previous|raw }}</span></a>
+                            <a href="{{ site_url }}{{ page.pagination.previous_page.url }}" title="{{ previous }}">
+                                <span>{{ previous|raw }}</span>
+                            </a>
                         {% endif %}
                         {% if page.pagination.next_page %}
-                            <a href="{{ site_url }}{{ page.pagination.next_page.url }}" title="{{ next }}"><span>{{ next|raw}}</span></a>
+                            <a href="{{ site_url }}{{ page.pagination.next_page.url }}" title="{{ next }}">
+                                <span>{{ next|raw}}</span>
+                            </a>
                         {% endif %}
                     {% endif %}
                 </div>
