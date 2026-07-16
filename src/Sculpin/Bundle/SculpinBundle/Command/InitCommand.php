@@ -143,7 +143,7 @@ final class InitCommand extends AbstractCommand
         $this->createSiteKernelFile($projectDir, $posts);
         $this->createSiteConfigFile($projectDir, $title, $subTitle);
 
-        // 4. Create source folder (with or without posts) and the very first basic entry in the source folder
+        // 4. Create source folder (with or without posts)
         $this->createSourceFolder($projectDir, $posts);
 
         $output->writeln('<info>Success!</info>');
@@ -241,17 +241,81 @@ final class InitCommand extends AbstractCommand
     {
         $fs = new Filesystem();
 
-        $fs->dumpFile(
-            $projectDir . '/source/index.md',
-            <<<EOT
-            ---
-            layout: default
-            ---
+        if (!$posts) {
+            // Sites without posts get a bare-bones Index
+            $fs->dumpFile(
+                $projectDir . '/source/index.md',
+                <<<EOT
+                ---
+                layout: default
+                ---
 
-            <h1>Welcome to {{site.title}}</h1>
+                <h1>Welcome to {{site.title}}</h1>
 
-            EOT
-        );
+                EOT
+            );
+        } else {
+            $fs->dumpFile(
+                $projectDir . '/source/index.md',
+                <<<EOT
+                ---
+                layout: default
+                generator: pagination
+                pagination:
+                    max_per_page: 6
+                use:
+                    - posts
+                ---
+
+                <h1>Welcome to {{site.title}}</h1>
+
+                <h2>Recent Posts</h2>
+                {% for post in page.pagination.items %}
+                    <article>
+                        <header>
+                            <div><h2><a href="{{ site.url }}{{ post.url }}">{{ post.title }}</a></h2></div>
+                            <div>{{post.date|date("F j, Y")}}</div>
+                        </header>
+                        <div>
+                                {# Split the post into an array using explode().
+                                   Because we provide a length of 2, the "rest"
+                                   of the post will be stored in the second array
+                                   element, even if there are multiple breakpoints. #}
+                                {% set break_array =
+                                    post.blocks.content|split('<!-- break -->', 2) %}
+
+                                {# Output the first element of the array in raw mode #}
+                                {{ break_array[0]|raw }}
+
+                                {# Detect if there is more to the post. If the post
+                                   was only one array element with no breakpoints,
+                                   it would all have shown up. This Read More link should
+                                   only show up if there is overflow to the post. #}
+                                {% if break_array|length > 1 %}
+                                    <div><a href="{{ site.url }}{{ post.url }}">
+                                        Read more of this post »
+                                    </a></div>
+                                {% endif %}
+                        </div>
+                        {% if post.meta.tags %}
+                        <div>
+                            <small>Tags: {% for tag in post.meta.tags %}
+                            <a href="{{ site.url }}/posts/tags/{{ tag }}">{{ tag }}</a>
+                            {% endfor %}
+                            </small>
+                        </div>
+                        {% endif %}
+                    </article>
+                {% else %}
+                <p>There no recent posts.</p>
+                {% endfor %}
+
+                {% import 'macros.twig' as util %}
+                {{ util.pagination(page, site.url, '« Newer Posts', 'Older Posts »') }}
+
+                EOT
+            );
+        }
 
         $fs->dumpFile(
             $projectDir . '/source/_views/default.html',
@@ -262,6 +326,34 @@ final class InitCommand extends AbstractCommand
             {% block content_wrapper %}{% block content '' %}{% endblock content_wrapper %}
             </body>
             </html>
+
+            EOT
+        );
+
+        $fs->dumpFile(
+            $projectDir . '/source/_includes/macros.twig',
+            <<<EOT
+            {% macro pagination(page, site_url, previous = 'Older', next = 'Newer') %}
+                <div class="pagination">
+                    {% if page.pagination.previous_page or page.pagination.next_page %}
+                        {% if page.pagination.previous_page %}
+                            <a href="{{ site_url }}{{ page.pagination.previous_page.url }}" title="{{ previous }}"><span>{{ previous|raw }}</span></a>
+                        {% endif %}
+                        {% if page.pagination.next_page %}
+                            <a href="{{ site_url }}{{ page.pagination.next_page.url }}" title="{{ next }}"><span>{{ next|raw}}</span></a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endmacro %}
+
+            {% macro breadcrumb(items) %}
+                <div class="breadcrumb">
+                    {% for url, label in items %}
+                        {% if not loop.first %}<span>&raquo;</span>{% endif %}
+                    <a href="{{site.url}}{{url}}">{{ label }}</a>
+                    {% endfor %}
+                </div>
+            {% endmacro %}
 
             EOT
         );
