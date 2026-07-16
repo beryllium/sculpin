@@ -52,6 +52,10 @@ class ContentCreateService
             $manifest[$index] = $this->getTaxonomyViewTemplate($plural, $singular, $singularTaxonomy);
         }
 
+        // create the first content item in the storage folder
+        $firstPost            = $rootDir . '/source/_' . $plural . '/first_' . $singular . '.md';
+        $manifest[$firstPost] = $this->getFirstItem($singular, $taxonomies);
+
         return $manifest;
     }
 
@@ -236,6 +240,25 @@ class ContentCreateService
             {% endif %}
             {% endif %}
         </nav>
+        EOT;
+    }
+
+    private function getFirstItem(string $singular, array $taxonomies): string
+    {
+        $title = ucfirst($singular);
+
+        $taxonomyFrontMatter = implode("\n", array_map(fn ($taxonomy) => "$taxonomy:\n  - example", $taxonomies));
+
+        return <<<EOT
+        ---
+        layout: default
+        title: My First {$title}
+        $taxonomyFrontMatter
+        ---
+        # Welcome to My First {$singular}
+
+        Welcome! This the first {$singular} for {{ site.title }}!
+
         EOT;
     }
 }
