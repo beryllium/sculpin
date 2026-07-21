@@ -86,7 +86,7 @@ final class ContentCreateCommand extends AbstractCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $pluralType   = $input->getArgument('type');
         $singularType = (new EnglishInflector())->singularize($pluralType)[0];

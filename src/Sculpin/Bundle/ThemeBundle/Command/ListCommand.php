@@ -40,7 +40,7 @@ class ListCommand extends ContainerAwareCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $themeRegistry = $this->getContainer()->get('sculpin_theme.theme_registry');
         $activeTheme = $themeRegistry->findActiveTheme();
