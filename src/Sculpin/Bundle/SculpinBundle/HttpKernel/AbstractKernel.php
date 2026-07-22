@@ -163,7 +163,7 @@ abstract class AbstractKernel extends Kernel
      *
      * @return string
      */
-    public function getProjectDir(): ?string
+    public function getProjectDir(): string
     {
         return $this->projectDir;
     }
