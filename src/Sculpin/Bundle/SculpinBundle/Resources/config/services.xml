@@ -104,6 +104,11 @@
             <tag name="console.command"/>
         </service>
 
+        <service id="Sculpin\Bundle\SculpinBundle\Command\RunCommand"
+                 class="Sculpin\Bundle\SculpinBundle\Command\RunCommand">
+            <tag name="console.command"/>
+        </service>
+
         <service id="Sculpin\Bundle\SculpinBundle\Command\ServeCommand"
                  class="Sculpin\Bundle\SculpinBundle\Command\ServeCommand">
             <tag name="console.command"/>
