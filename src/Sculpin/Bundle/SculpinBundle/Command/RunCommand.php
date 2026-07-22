@@ -42,6 +42,7 @@ class RunCommand extends AbstractCommand
                 ),
                 new InputOption('url', null, InputOption::VALUE_REQUIRED, 'Override URL.'),
                 new InputOption('port', null, InputOption::VALUE_REQUIRED, 'Port'),
+                new InputOption('no-editor', null, InputOption::VALUE_NONE, 'Turn off the in-browser editor.'),
                 new InputOption('output-dir', null, InputOption::VALUE_REQUIRED, 'Output Directory'),
                 new InputOption('source-dir', null, InputOption::VALUE_REQUIRED, 'Source Directory'),
             ])
@@ -74,6 +75,11 @@ class RunCommand extends AbstractCommand
 
         foreach ($input->getOptions() as $key => $value) {
             $inputData['--' . $key] = $value;
+        }
+
+        if (true === $inputData['--no-editor']) {
+            unset($inputData['--editor']);
+            unset($inputData['--no-editor']);
         }
 
         $inputData = $inputData + $input->getArguments();
