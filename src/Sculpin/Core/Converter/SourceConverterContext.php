@@ -37,7 +37,7 @@ class SourceConverterContext implements ConverterContextInterface
      */
     public function content(): string
     {
-        return $this->source->content() ?? '';
+        return $this->source->content();
     }
 
     /**
