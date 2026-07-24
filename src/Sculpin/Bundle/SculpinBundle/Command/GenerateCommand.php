@@ -16,7 +16,7 @@ namespace Sculpin\Bundle\SculpinBundle\Command;
 use Sculpin\Bundle\SculpinBundle\Console\Application;
 use Sculpin\Bundle\SculpinBundle\HttpServer\DefaultContentFetcher;
 use Sculpin\Bundle\SculpinBundle\HttpServer\HttpServer;
-use Sculpin\Bundle\SculpinBundle\HttpServer\InBrowserEditorContentFetcher;
+use Sculpin\Bundle\EditorBundle\InBrowserEditorContentFetcher;
 use Sculpin\Core\Io\ConsoleIo;
 use Sculpin\Core\Io\IoInterface;
 use Sculpin\Core\Sculpin;

@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Sculpin\Bundle\SculpinBundle\HttpServer;
+namespace Sculpin\Bundle\EditorBundle;
 
 use League\MimeTypeDetection\MimeTypeDetector;
+use Psr\Http\Message\ServerRequestInterface;
+use React\Http\Message\Response;
+use Sculpin\Bundle\SculpinBundle\HttpServer\ContentFetcher;
+use Sculpin\Bundle\SculpinBundle\HttpServer\HttpServer;
 use Sculpin\Core\Source\SourceSet;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 
 class InBrowserEditorContentFetcher implements ContentFetcher
@@ -26,6 +31,40 @@ class InBrowserEditorContentFetcher implements ContentFetcher
 
         $this->buildPathMap($set);
         $this->buildSourceMap();
+    }
+
+    public function handleRequest(
+        string $path,
+        ServerRequestInterface $request,
+        OutputInterface $output,
+    ): ?Response {
+        $params = $request->getQueryParams();
+        $url = $params['url'] ?? '';
+        $source = $params['source'] ?? '';
+        $requestMethod = $request->getMethod();
+
+        return match (true) {
+            str_ends_with($path, '_SCULPIN_/editor.js') => new Response(
+                200,
+                ['Content-Type' => 'text/javascript'],
+                $this->editorJs()
+            ),
+            str_ends_with($path, '_SCULPIN_/editor.css') => new Response(
+                200,
+                ['Content-Type' => 'text/css'],
+                $this->editorCss()
+            ),
+            str_ends_with($path, '_SCULPIN_/hash') && $requestMethod === 'GET' => $this->diskPathExists($url)
+                ? new Response(200, ['Content-Type' => 'application/json'], json_encode(['hash' => $this->hash($url)]))
+                : new Response(
+                    400, // 400 is intentional, as the path may exist in Output yet not exist as a Source file
+                    ['Content-Type' => 'application/json'],
+                    json_encode(['error' => 'Not Found-ish'])
+                ),
+            strstr($path, '/_SCULPIN_/metadata') && $requestMethod === 'GET' => $this->getMetadataResponse($url, $source),
+            str_ends_with($path, '_SCULPIN_/update') && $requestMethod === 'PUT' => $this->applyUpdate($request, $output),
+            default => null,
+        };
     }
 
     public function buildPathMap(SourceSet $set): void
@@ -121,7 +160,7 @@ class InBrowserEditorContentFetcher implements ContentFetcher
 
     public function editorJs(): string
     {
-        return file_get_contents(__DIR__ . '/../Resources/js/editor.js') ?: '';
+        return file_get_contents(__DIR__ . '/Resources/js/editor.js') ?: '';
     }
 
     public function diskPathExists(string $path): bool
@@ -164,7 +203,7 @@ class InBrowserEditorContentFetcher implements ContentFetcher
 
     public function editorCss(): string
     {
-        return file_get_contents(__DIR__ . '/../Resources/css/editor.css') ?: '';
+        return file_get_contents(__DIR__ . '/Resources/css/editor.css') ?: '';
     }
 
     public function getMetadata(string $path = '', string $source = ''): array
@@ -205,5 +244,56 @@ class InBrowserEditorContentFetcher implements ContentFetcher
         }
 
         return $output;
+    }
+
+    /**
+     * @param string $url
+     * @param string $source
+     * @return Response
+     */
+    protected function getMetadataResponse(string $url, string $source): Response
+    {
+        try {
+            return new Response(
+                200,
+                ['Content-Type' => 'application/json'],
+                json_encode($this->getMetadata(path: $url, source: $source))
+            );
+        } catch (\Exception $e) {
+            return new Response(
+                404,
+                ['Content-Type' => 'application/json'],
+                json_encode(['error' => 'Not Found'])
+            );
+        }
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param OutputInterface $output
+     * @return Response
+     */
+    public function applyUpdate(ServerRequestInterface $request, OutputInterface $output): Response
+    {
+        $edit = json_decode($request->getBody()->getContents(), true);
+
+        if (!$this->sourceExists($edit['diskPath'])) {
+            HttpServer::logRequest($output, 404, $request);
+
+            $notFoundMessage = '<h1>404</h1><h2>Not Found</h2>'
+                . '<p>'
+                . 'The embedded <a href="https://sculpin.io">Sculpin</a> web server '
+                . 'could not update the requested resource.'
+                . '</p>';
+
+            return new Response(404, ['Content-Type' => 'text/html'], $notFoundMessage);
+        }
+
+        $this->save($edit['diskPath'], $edit['content']);
+
+        HttpServer::logRequest($output, 307, $request);
+        $output->writeln(sprintf('Updated: %s', $edit['diskPath']));
+
+        return new Response(307, ['Location' => $edit['path']]);
     }
 }
