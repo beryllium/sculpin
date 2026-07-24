@@ -14,29 +14,9 @@ declare(strict_types=1);
 namespace Sculpin\Bundle\EditorBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Sculpin\Contrib\ProxySourceCollection\ProxySourceItem;
-use Sculpin\Contrib\ProxySourceCollection\Sorter\DefaultSorter;
-use Sculpin\Contrib\ProxySourceCollection\ProxySourceCollection;
-use Sculpin\Core\Source\Filter\AntPathFilter;
-use Sculpin\Core\Source\Filter\MetaFilter;
-use Sculpin\Core\Source\Filter\ChainFilter;
-use Sculpin\Core\Source\Filter\DraftsFilter;
-use Sculpin\Core\Source\Map\DefaultDataMap;
-use Sculpin\Core\Source\Map\CalculatedDateFromFilenameMap;
-use Sculpin\Core\Source\Map\DraftsMap;
-use Sculpin\Core\Source\Map\ChainMap;
-use Sculpin\Contrib\ProxySourceCollection\SimpleProxySourceItemFactory;
-use Sculpin\Contrib\ProxySourceCollection\ProxySourceCollectionDataProvider;
-use Sculpin\Contrib\Taxonomy\PermalinkStrategyCollection;
-use Sculpin\Contrib\Taxonomy\PermalinkStrategyCollectionFactory;
-use Sculpin\Contrib\Taxonomy\ProxySourceTaxonomyDataProvider;
-use Sculpin\Contrib\Taxonomy\ProxySourceTaxonomyIndexGenerator;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
-use Symfony\Component\String\Inflector\EnglishInflector;
 
 /**
  * @author Kevin Boyd <kevin@whateverthing.com>
