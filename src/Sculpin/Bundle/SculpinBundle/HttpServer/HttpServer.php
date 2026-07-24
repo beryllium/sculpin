@@ -18,6 +18,7 @@ use React\EventLoop\StreamSelectLoop;
 use React\Http\Message\Response;
 use React\Http\Server as ReactHttpServer;
 use React\Socket\Server as ReactSocketServer;
+use Sculpin\Bundle\EditorBundle\InBrowserEditorContentFetcher;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Mime\MimeTypes;
 
@@ -135,74 +136,12 @@ final class HttpServer
                 $path = rtrim($path, '/') . '/index.html';
             }
 
-            if ($fetcher instanceof InBrowserEditorContentFetcher) {
-                $params = $request->getQueryParams();
-                $url = $params['url'] ?? '';
-                $source = $params['source'] ?? '';
+            $response = $fetcher instanceof InBrowserEditorContentFetcher
+                ? $fetcher->handleRequest($path, $request, $output)
+                : null;
 
-                if (str_ends_with($path, '_SCULPIN_/editor.js')) {
-                    return new Response(200, ['Content-Type' => 'text/javascript'], $fetcher->editorJs());
-                }
-
-                if (str_ends_with($path, '_SCULPIN_/editor.css')) {
-                    return new Response(200, ['Content-Type' => 'text/css'], $fetcher->editorCss());
-                }
-
-                if (str_ends_with($path, '_SCULPIN_/hash') && $request->getMethod() === 'GET') {
-                    if (!$fetcher->diskPathExists($url)) {
-                        return new Response(
-                            400, // 400 is intentional, as the path may exist in Output yet not exist as a Source file
-                            ['Content-Type' => 'application/json'],
-                            json_encode(['error' => 'Not Found'])
-                        );
-                    }
-
-                    $hash = $fetcher->hash($url);
-                    $output->writeln(sprintf('Hash for %s: %s', $url, $hash));
-
-                    return new Response(200, ['Content-Type' => 'application/json'], json_encode(['hash' => $hash]));
-                }
-
-                if (strstr($path, '/_SCULPIN_/metadata') && $request->getMethod() === 'GET') {
-                    try {
-                        return new Response(
-                            200,
-                            ['Content-Type' => 'application/json'],
-                            json_encode($fetcher->getMetadata(path: $url, source: $source))
-                        );
-                    } catch (\Exception $e) {
-                        return new Response(
-                            404,
-                            ['Content-Type' => 'application/json'],
-                            json_encode(['error' => 'Not Found'])
-                        );
-                    }
-                }
-
-                if (str_ends_with($path, '_SCULPIN_/update')
-                    && $request->getMethod() === 'PUT'
-                ) {
-                    $edit = json_decode($request->getBody()->getContents(), true);
-
-                    if (!$fetcher->sourceExists($edit['diskPath'])) {
-                        HttpServer::logRequest($output, 404, $request);
-
-                        $notFoundMessage = '<h1>404</h1><h2>Not Found</h2>'
-                            . '<p>'
-                            . 'The embedded <a href="https://sculpin.io">Sculpin</a> web server '
-                            . 'could not update the requested resource.'
-                            . '</p>';
-
-                        return new Response(404, ['Content-Type' => 'text/html'], $notFoundMessage);
-                    }
-
-                    $fetcher->save($edit['diskPath'], $edit['content']);
-
-                    HttpServer::logRequest($output, 307, $request);
-                    $output->writeln(sprintf('Updated: %s', $edit['diskPath']));
-
-                    return new Response(307, ['Location' => $edit['path']]);
-                }
+            if ($response) {
+                return $response;
             }
 
             if (!file_exists($path)) {

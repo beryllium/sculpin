@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Sculpin\Bundle\SculpinBundle\HttpKernel;
 
+use Sculpin\Bundle\ContentTypesBundle\SculpinContentTypesBundle;
+use Sculpin\Bundle\EditorBundle\SculpinEditorBundle;
 use Sculpin\Bundle\StandaloneBundle\SculpinStandaloneBundle;
 use Sculpin\Bundle\MarkdownBundle\SculpinMarkdownBundle;
 use Sculpin\Bundle\TextileBundle\SculpinTextileBundle;
@@ -21,7 +23,6 @@ use Sculpin\Bundle\PaginationBundle\SculpinPaginationBundle;
 use Sculpin\Bundle\SculpinBundle\SculpinBundle;
 use Sculpin\Bundle\ThemeBundle\SculpinThemeBundle;
 use Sculpin\Bundle\TwigBundle\SculpinTwigBundle;
-use Sculpin\Bundle\ContentTypesBundle\SculpinContentTypesBundle;
 use Sculpin\Bundle\PostsBundle\SculpinPostsBundle;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\LoaderInterface;
@@ -82,6 +83,7 @@ abstract class AbstractKernel extends Kernel
             new SculpinThemeBundle,
             new SculpinTwigBundle,
             new SculpinContentTypesBundle,
+            new SculpinEditorBundle,
             new SculpinPostsBundle,
         ];
 
