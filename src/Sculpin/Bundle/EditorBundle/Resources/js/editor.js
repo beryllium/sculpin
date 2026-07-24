@@ -4,8 +4,17 @@ var SculpinEditor = {
     },
 
     renderBar: function () {
+        console.log('Drawing Editor Bar');
+
+        // Check if bar has already been drawn
+        let menuBar = document.getElementById('SCULPIN_EDITOR_BAR');
+        if (menuBar) {
+            this.registerListeners();
+            return;
+        }
+
         // select body element for interface injection
-        var body = document.getElementsByTagName('body')[0];
+        let body = document.getElementsByTagName('body')[0];
 
         // render menu bar with edit button
         body.innerHTML += '<div id="SCULPIN_EDITOR_BAR">' +
@@ -35,11 +44,17 @@ var SculpinEditor = {
     },
 
     renderEditor: function () {
-        // replace bar with editor
-        document.getElementById('SCULPIN_EDITOR_BAR').style.visibility = 'hidden';
+        console.log('Drawing Editor Panel');
+
+        // Check if editor has already been drawn
+        let editor = document.getElementById('SCULPIN_EDIT_PANEL');
+        if (editor) {
+            this.registerEditorListeners();
+            return;
+        }
 
         // load editor box with content
-        var body = document.getElementsByTagName('body')[0];
+        let body = document.getElementsByTagName('body')[0];
         body.innerHTML += '<div id="SCULPIN_EDIT_PANEL">' +
             '<div class="top-controls">' +
             '<div><h3>Editing:</h3>' +
@@ -60,49 +75,53 @@ var SculpinEditor = {
             '<button id="SCULPIN_SAVE_CHANGES">Save Changes</button>' +
             '</div></div>';
 
-        this.registerListeners();
+        this.registerEditorListeners();
     },
 
     registerListeners: function () {
+        console.log('Registering Edit Bar Listeners');
         let editButton = document.getElementById("SCULPIN_EDIT_BUTTON");
+
+        editButton && editButton.addEventListener('click', function () {
+            console.log('Clicked Edit');
+            SculpinEditor.renderEditor();
+
+            var editor = document.getElementById('SCULPIN_EDIT_PANEL');
+            var menuBar = document.getElementById('SCULPIN_EDITOR_BAR');
+
+            if (editor) {
+                console.log('Hiding Editor Bar');
+                menuBar.style.visibility = 'collapse';
+                editor.style.visibility = 'visible';
+            }
+        });
+    },
+
+    registerEditorListeners: function () {
+        console.log('Registering Listeners');
         let saveButton = document.getElementById("SCULPIN_SAVE_CHANGES");
         let cancelButton = document.getElementById("SCULPIN_CANCEL_CHANGES");
         let fileSelectorForm = document.getElementById('SCULPIN_FILE_SELECTOR');
 
-        editButton && editButton.addEventListener('click', function () {
-            var editor = document.getElementById('SCULPIN_EDIT_PANEL');
-            var menuBar = document.getElementById('SCULPIN_EDITOR_BAR');
-
-            if (editor && editor.length > 0) {
-                editor.style.visibility = 'collapse';
-                menuBar.style.visibility = 'visible';
-
-                SculpinEditor.registerListeners();
-
-                return;
-            }
-
-            SculpinEditor.renderEditor();
-        });
-
-        // create save button listener
-
         saveButton && saveButton.addEventListener('click', function () {
+            console.log('Clicked Save');
             SculpinEditor.saveChanges();
         });
 
         fileSelectorForm && fileSelectorForm.addEventListener('change', function (e) {
+            console.log('Clicked to Change File');
             SculpinEditor.switchFile(e);
         });
 
         // @todo Cancel button re-registration is not working
         cancelButton && cancelButton.addEventListener('click', function () {
             console.log('Clicked Cancel');
+
             // @todo check if the content has changed and ask the user to confirm if they want to discard their changes
             document.getElementById('SCULPIN_EDITOR_BAR').style.visibility = 'visible';
             document.getElementById('SCULPIN_EDIT_PANEL').style.visibility = 'collapse';
 
-            SculpinEditor.registerListeners();
+            SculpinEditor.renderBar();
         });
     },
 
@@ -226,6 +245,7 @@ var SculpinEditor = {
             .catch(err => console.log('Exception while updating metadata', err));
     },
     refreshEditor: () => {
+        console.log('Refreshing the Editor Contents & Metadata');
         let editBox = document.getElementById('SCULPIN_EDIT_TEXTAREA');
         let editFilename = document.querySelectorAll('#SCULPIN_EDIT_PANEL > h3 > small')[0];
 
