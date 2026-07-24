@@ -85,6 +85,58 @@ class ComplexProviderLifecycleTest extends FunctionalTestCase
         );
     }
 
+    /** @test */
+    public function testComplexLifecycleBuildsProperly_WhileUsingRun(): void
+    {
+        $sourcePage = __DIR__ . self::PROJECT_DIR . '/source/_clades/1-jacksons.html';
+        $generatedPage = __DIR__ . self::PROJECT_DIR . '/' . 'output_test/index.html';
+        $expectedFileContents = '<strong>hypothetical</strong>';
+        $matchString = "{% include 'jackson.html' %}";
+
+        // ensure consistent test state
+        $rawPage = file_get_contents($sourcePage);
+        $this->modifySourcePage(
+            filePath: $sourcePage,
+            regex: '# *' . $matchString . ' *#',
+            replacement: $matchString,
+            body: $rawPage
+        );
+
+        // start our async sculpin watcher/server
+        // this may result in TCP port conflicts on some system configurations
+        $process = $this->executeSculpinAsync(['run']);
+
+        sleep(1); // wait until our file exists
+        $pageContent = file_get_contents($generatedPage);
+
+        // check for the word being tested
+        $this->assertStringContainsString($expectedFileContents, $pageContent);
+
+        // update the files under test by adding whitespace
+        $this->modifySourcePage(
+            filePath: $sourcePage,
+            regex: '#' . $matchString . '#',
+            replacement: '  ' . $matchString . ' ',
+            body: $rawPage
+        );
+
+        sleep(2);
+        $pageContent = file_get_contents($generatedPage);
+
+        // check for the word being tested
+        $this->assertStringContainsString($expectedFileContents, $pageContent);
+
+        $process->stop(0);
+
+        // reset the source page
+        $this->modifySourcePage(
+            filePath: $sourcePage,
+            regex: '# *' . $matchString . ' *#',
+            replacement: $matchString,
+            body: $rawPage
+        );
+    }
+
     protected function modifySourcePage(string $filePath, string $regex, string $replacement, string $body): void
     {
         file_put_contents($filePath, preg_replace($regex, $replacement, $body));
