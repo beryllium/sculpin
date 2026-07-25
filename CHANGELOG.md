@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 3.3.1 - 2026-07-24
+
+### Fixed
+
+* [Fix textile support and clear up additional PHP 8.5 notice messages](https://github.com/sculpin/sculpin/pull/524) (Note: Updates symfony dependencies to 6.4)
+
 ## 3.3.0 - 2026-07-19
 
 ### Changed
