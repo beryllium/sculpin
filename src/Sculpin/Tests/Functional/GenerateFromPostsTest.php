@@ -62,35 +62,77 @@ final class GenerateFromPostsTest extends FunctionalTestCase
         );
     }
 
-    /**
-     * @return void
-     */
-    private function prepareTagsSupport(): void
+    /** @test */
+    public function shouldProperlyHandleContentTypesAndKeepThemSeparated(): void
     {
-        $this->addProjectDirectory('/source/blog/tags');
+        $this->addProjectDirectory('/source/_posts');
+        $this->addProjectDirectory('/source/_posts2');
+
+        // Manually rewrite the kernel yaml to create two post types
         $this->writeToProjectFile(
             '/app/config/sculpin_kernel.yml',
             <<<EOT
             sculpin_content_types:
               posts:
-                permalink: blog/:basename
+                permalink: post/:basename
+              posts2:
+                permalink: post2/:basename
+            EOT
+        );
+
+        // Add some initial posts
+        $this->copyFixtureToProject(__DIR__ . '/Fixture/source/hello_world.md', '/source/_posts/hello_world3.md');
+        $this->copyFixtureToProject(
+            __DIR__ . '/Fixture/source/hello_world_draft_tagged.md',
+            '/source/_posts/tagged_world.md'
+        );
+        $this->copyFixtureToProject(
+            __DIR__ . '/Fixture/source/hello_world_textile_tagged.textile',
+            '/source/_posts2/tagged_hello.md'
+        );
+
+        $this->executeSculpin(['generate']);
+
+        $this->assertProjectHasGeneratedFile('/post/tagged_world/index.html');
+        $this->assertGeneratedFileHasContent(
+            '/post/tagged_world/index.html',
+            'Hello Tagged World'
+        );
+
+        $this->assertProjectLacksFile('/output_test/post/tagged_hello/index.html');
+        $this->assertProjectHasGeneratedFile('/post2/tagged_hello/index.html');
+        $this->assertGeneratedFileHasContent(
+            '/post2/tagged_hello/index.html',
+            'Aenean id lacinia tellus'
+        );
+    }
+
+    private function prepareTagsSupport(string $contentTypePlural = 'posts', string $contentTypeSingular = 'blog'): void
+    {
+        $this->addProjectDirectory('/source/' . $contentTypeSingular . '/tags');
+        $this->writeToProjectFile(
+            '/app/config/sculpin_kernel.yml',
+            <<<EOT
+            sculpin_content_types:
+              $contentTypePlural:
+                permalink: $contentTypeSingular/:basename
             EOT
         );
         $this->writeToProjectFile(
-            '/source/blog/tags.html',
+            '/source/' . $contentTypeSingular . '/tags.html',
             <<<EOT
             ---
             layout: default
             title: Tags
             use:
-                - posts_tags
+                - {$contentTypePlural}_tags
             ---
             <h2>Tags</h2>
             <ul>
-            {% for tag,posts in data.posts_tags %}
+            {% for tag,$contentTypePlural in data.{$contentTypePlural}_tags %}
             <li>
-                <a href="{{ site.url }}/blog/tags/{{ tag }}">
-                {{ tag|capitalize }}<span>{{ posts|length}} posts</span>
+                <a href="{{ site.url }}/{$contentTypeSingular}/tags/{{ tag }}">
+                {{ tag|capitalize }}<span>{{ $contentTypePlural|length}} $contentTypePlural</span>
                 </a>
             </li>
             {% endfor %}
@@ -98,14 +140,14 @@ final class GenerateFromPostsTest extends FunctionalTestCase
             EOT
         );
         $this->writeToProjectFile(
-            '/source/blog/tags/tag.html',
+            '/source/' . $contentTypeSingular . '/tags/tag.html',
             <<<EOT
             ---
             layout: default
             title: Tag Archive
-            generator: [posts_tag_index, pagination]
+            generator: [{$contentTypePlural}_tag_index, pagination]
             pagination:
-                provider: page.tagged_posts
+                provider: page.tagged_{$contentTypePlural}
             ---
             <h2>Tag: <span>"{{ page.tag|capitalize }}"</span></h2>
             <ul>

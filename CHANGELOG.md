@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 * Issue with Textile file support and additional cleanups. Also includes some weird git merging hijinks to include `main`. ([#531](https://github.com/sculpin/sculpin/pull/531), [#524](https://github.com/sculpin/sculpin/pull/524))
+* (Confirmed Fixed) Added test case to verify fix for common-prefix confusion in content types ([#475](https://github.com/sculpin/sculpin/issues/475)) 
 
 ## 4.0.0-alpha1 - 2026-07-06
 
