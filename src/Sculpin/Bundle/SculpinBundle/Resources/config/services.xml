@@ -62,9 +62,21 @@
         </service>
 
         <service id="sculpin.mime.detector" class="League\MimeTypeDetection\FinfoMimeTypeDetector" public="true">
-            <argument></argument>
-            <argument>NULL</argument>
+            <argument/>
+            <argument type="service" id="sculpin.mime.detector_overrides" />
             <argument>200</argument>
+        </service>
+
+        <service id="sculpin.mime.detector_ext2mime" class="\League\MimeTypeDetection\GeneratedExtensionToMimeTypeMap">
+        </service>
+
+        <service id="sculpin.mime.detector_overrides" class="League\MimeTypeDetection\OverridingExtensionToMimeTypeMap">
+
+            <argument type="service" id="sculpin.mime.detector_ext2mime"/>
+            <argument type="collection">
+                <argument key="textile">text/plain</argument>
+            </argument>
+
         </service>
 
         <service id="sculpin.default_filesystem_data_source" class="Sculpin\Core\Source\FilesystemDataSource">
