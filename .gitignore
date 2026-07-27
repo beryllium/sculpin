@@ -9,3 +9,13 @@ output_dev/
 clover.xml
 .php-version
 .phpunit.result.cache
+.idea
+
+# spc
+downloads
+source
+pkgroot
+buildroot
+log
+.spc.cache.php
+sculpin-*

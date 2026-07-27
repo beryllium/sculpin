@@ -3,12 +3,12 @@ extensions: "ctype,dom,fileinfo,filter,iconv,json,libxml,mbstring,pcntl,pdo,phar
 sapi:
     - micro
 download-options:
-    parallel: 10
+    parallel: 6
     retry: 5
     ignore-cache: php-src
     prefer-binary: true
 build-options:
-    with-suggests: true
+    with-suggests: false
 extra-env:
     SPC_DEFAULT_CFLAGS: "-Oz -fPIC -ffunction-sections -fdata-sections"
     SPC_DEFAULT_CXXFLAGS: "-Oz -fPIC -ffunction-sections -fdata-sections"
