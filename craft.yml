@@ -5,7 +5,6 @@ sapi:
 download-options:
     parallel: 6
     retry: 5
-    ignore-cache: php-src
     prefer-binary: true
 build-options:
     with-suggests: false
