@@ -8,7 +8,7 @@ download-options:
     prefer-binary: true
 build-options:
     with-suggests: false
-    no-split: true
+    no-strip: true
 extra-env:
     SPC_DEFAULT_CFLAGS: "-Oz -fPIC -ffunction-sections -fdata-sections -g"
     SPC_DEFAULT_CXXFLAGS: "-Oz -fPIC -ffunction-sections -fdata-sections"
